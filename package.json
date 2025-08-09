@@ -29,6 +29,8 @@
     "viem": "^2.21.0",
     "@wagmi/core": "^2.13.0",
     "@rainbow-me/rainbowkit": "^2.2.0",
+    "@privy-io/react-auth": "^1.82.4",
+    "permissionless": "^0.2.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
