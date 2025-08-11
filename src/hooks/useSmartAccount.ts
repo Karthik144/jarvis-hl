@@ -2,13 +2,36 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useWallets, usePrivy } from '@privy-io/react-auth';
-import { sepolia } from 'viem/chains';
-import { createWalletClient, custom, createPublicClient, http, zeroAddress } from 'viem';
+import { createWalletClient, custom, createPublicClient, http, zeroAddress, Chain } from 'viem';
 import { createSmartAccountClient } from 'permissionless';
 import { toSimpleSmartAccount } from 'permissionless/accounts';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import { privateKeyToAccount } from 'viem/accounts';
 import { entryPoint07Address } from 'viem/account-abstraction';
+
+const hyperEVM: Chain = {
+  id: 999, 
+  name: 'HyperEVM',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.hyperliquid.xyz/evm'],
+    },
+    public: {
+      http: ['https://rpc.hyperliquid.xyz/evm'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'HyperEVM Explorer',
+      url: 'https://hyperevmscan.io/',
+    },
+  },
+};
 
 interface SmartAccountState {
   isLoading: boolean;
@@ -52,13 +75,13 @@ export function useSmartAccount() {
       
       const privyClient = createWalletClient({
         account: connectedWallet.address as `0x${string}`,
-        chain: sepolia,
+        chain: hyperEVM,
         transport: custom(eip1193provider)
       });
 
       const publicClient = createPublicClient({
-        chain: sepolia,
-        transport: http("https://sepolia.rpc.thirdweb.com")
+        chain: hyperEVM,
+        transport: http("https://rpc.hyperliquid.xyz/evm")
       });
 
       const pimlicoApiKey = process.env.NEXT_PUBLIC_PIMLICO_API_KEY;
@@ -66,7 +89,7 @@ export function useSmartAccount() {
         throw new Error('NEXT_PUBLIC_PIMLICO_API_KEY environment variable is required');
       }
 
-      const pimlicoUrl = `https://api.pimlico.io/v2/sepolia/rpc?apikey=${pimlicoApiKey}`
+      const pimlicoUrl = `https://api.pimlico.io/v2/hyper-evm/rpc?apikey=${pimlicoApiKey}`
 
       const pimlicoClient = createPimlicoClient({
         transport: http(pimlicoUrl),
@@ -89,9 +112,12 @@ export function useSmartAccount() {
       // v0.2.x API Permissionless
       const smartAccountClient = createSmartAccountClient({
         account: simpleSmartAccount,
-        chain: sepolia,
+        chain: hyperEVM,
         bundlerTransport: http(pimlicoUrl),
         paymaster: pimlicoClient,
+        paymasterContext: {
+          sponsorshipPolicyId: "sp_tiny_wrecking_crew",
+        },
         userOperation: {
             estimateFeesPerGas: async () => {
                 return (await pimlicoClient.getUserOperationGasPrice()).fast
@@ -135,13 +161,13 @@ export function useSmartAccount() {
 
     try {
       const txHash = await state.smartAccountClient.sendTransaction({
-        account: state.smartAccountClient.account,
+        // account: state.smartAccountClient.account,
         to: zeroAddress,
         value: BigInt(0),
         data: '0x',
       });
       
-      console.log(`User operation included: https://sepolia.etherscan.io/tx/${txHash}`);
+      console.log(`User operation included: https://hyperevmscan.io/tx/${txHash}`);
       return txHash;
     } catch (error) {
       console.error('Error sending user operation:', error);
