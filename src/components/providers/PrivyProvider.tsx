@@ -1,8 +1,31 @@
 'use client';
 
 import { PrivyProvider } from '@privy-io/react-auth';
-import { sepolia } from 'viem/chains';
+import { sepolia, Chain } from 'viem/chains';  
 
+const hyperEVM: Chain = {
+  id: 999, 
+  name: 'HyperEVM',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.hyperliquid.xyz/evm'],
+    },
+    public: {
+      http: ['https://rpc.hyperliquid.xyz/evm'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'HyperEVM Explorer',
+      url: 'https://hyperevmscan.io/',
+    },
+  },
+};
 interface Props {
   children: React.ReactNode;
 }
@@ -47,16 +70,15 @@ export function PrivyAuthProvider({ children }: Props) {
         externalWallets: {
           metamask: true,
           coinbase_wallet: true,
-          wallet_connect: true,
-          // This allows other injected wallets like Rabby
+          wallet_connect: true, // This allows other injected wallets like Rabby
         },
         appearance: {
           theme: 'light',
           accentColor: '#676FFF',
-          logo: 'https://img.icons8.com/?size=100&id=63439&format=png&color=000000', // Optional: your app logo
+          logo: 'https://img.icons8.com/?size=100&id=63439&format=png&color=000000', //Update to Jarvis logo
         },
-        supportedChains: [sepolia], 
-        defaultChain: sepolia,
+        supportedChains: [hyperEVM], 
+        defaultChain: hyperEVM,
       }}
     >
       {children}

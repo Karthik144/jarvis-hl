@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jarvis-HL - AI & Crypto Assistant",
-  description: "Full-stack AI assistant with Web3 capabilities and account abstraction",
+  title: "Jarvis - Agentic Finance",
+  description: "Portfolio automation powered by agentic inference & account abstraction",
 };
 
 export default function RootLayout({

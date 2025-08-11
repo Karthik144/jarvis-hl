@@ -29,30 +29,6 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to Jarvis-HL
-          </h2>
-          <p className="text-xl text-gray-600 mb-6">
-            A full-stack AI assistant with Web3 capabilities, smart contract interactions, and account abstraction powered by Privy + ZeroDev
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-              🤖 AI Integration
-            </span>
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-              🌐 Web3 Ready
-            </span>
-            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-              ⚡ Account Abstraction
-            </span>
-            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">
-              🔗 Smart Contracts
-            </span>
-          </div>
-        </div>
-
         {/* Smart Account Demo */}
         <SmartAccountDemo />
       </main>
