@@ -161,7 +161,6 @@ export function useSmartAccount() {
 
     try {
       const txHash = await state.smartAccountClient.sendTransaction({
-        // account: state.smartAccountClient.account,
         to: zeroAddress,
         value: BigInt(0),
         data: '0x',

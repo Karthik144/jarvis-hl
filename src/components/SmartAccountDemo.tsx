@@ -142,7 +142,7 @@ export function SmartAccountDemo() {
       {/* Transaction Interface */}
       {smartAccount && (
         <div className="mb-6 p-4 border rounded">
-          <h3 className="font-semibold mb-4">Send Transaction (Gas Sponsored)</h3>
+          <h3 className="font-semibold mb-4">Burn 0 Hype (Gas Sponsored)</h3>
           <div className="flex gap-2 mb-4">
             <button
               onClick={handleSendTransaction}
@@ -163,6 +163,11 @@ export function SmartAccountDemo() {
                 <div className="text-green-600">
                   <p>✅ Transaction successful!</p>
                   <p className="text-xs mt-1 break-all">Hash: {txStatus.hash}</p>
+                  <p className="text-xs mt-1 break-all">
+                    Blockchain Explorer: <a href={`https://hyperevmscan.io/tx/${txStatus.hash}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      https://hyperevmscan.io/tx/{txStatus.hash}
+                    </a>
+                  </p>
                 </div>
               )}
               {txStatus.status === 'error' && (
