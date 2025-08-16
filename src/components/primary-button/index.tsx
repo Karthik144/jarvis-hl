@@ -19,7 +19,6 @@ export default function PrimaryButton({
         color: "white",
         borderRadius: "12px",
         textTransform: "none",
-        ...props.sx,
       }}
       {...props}
     >
