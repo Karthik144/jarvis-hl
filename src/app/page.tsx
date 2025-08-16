@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
-import { styled } from "@mui/system";
 import { GlowOrb } from "../components/orb";
 import { BoxStyles, ButtonStyles } from "./constants";
 import Navbar from "../components/navbar";
