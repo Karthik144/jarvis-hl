@@ -4,7 +4,8 @@ import React, { useEffect } from "react";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ButtonStyles, AppBarStyles } from "./constants";
-import { usePrivy } from "@privy-io/react-auth"; // Removed useLogin
+import { usePrivy } from "@privy-io/react-auth";
+import { findOrCreateUser } from "@/utils/findOrCreateUser";
 
 export default function Navbar() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -15,10 +16,17 @@ export default function Navbar() {
   // Note: Privy login method doesn't reutrn a promise so we need to handle the navigation manually
   // To-Do: Use our own UI for login instead of Privy's
   useEffect(() => {
-    if (isSignedIn) {
-      router.push("/dashboard");
-    }
-  }, [isSignedIn, router]);
+    const handleUserSession = async () => {
+      console.log("INSIDE HANDLE USER SESSION");
+      if (isSignedIn && user?.wallet?.address) {
+        console.log("User is authenticated, checking database...");
+        await findOrCreateUser(user.wallet.address);
+        router.push("/dashboard");
+      }
+    };
+
+    handleUserSession();
+  }, [isSignedIn, router, user?.wallet?.address]);
 
   const handleLogout = async () => {
     console.log("Logging out...");
