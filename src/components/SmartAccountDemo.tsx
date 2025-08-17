@@ -30,6 +30,7 @@ export function SmartAccountDemo() {
       // Note: If you're making any other call other than a lending allocation, then you need to pass in the output token
       // We don't need output token for lending allocation since we get it from HyperLend API.
       // Output token, if included, should be called requestedOutputToken
+      // For creating a vault allocation, you just need to include the output token address as the yield bearing asset
       const testApiPayload = {
         inputToken: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb", // Note: This is USDT0 on HyperEVM.
         userPublicAddress: userAddress,
