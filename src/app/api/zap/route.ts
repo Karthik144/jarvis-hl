@@ -1,24 +1,13 @@
 import { ethers } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
-
-interface TransactionCall {
-  to: string;
-  data: string;
-  value: string;
-}
-
-interface HyperLendReserve {
-  underlyingAsset: string;
-  aTokenAddress: string;
-}
-
-const ERC20_ABI = [
-  "function decimals() view returns (uint8)",
-  "function approve(address spender, uint256 amount) external",
-];
-const GLUEX_QUOTE_ENDPOINT = "https://router.gluex.xyz/v1/quote";
-const HYPERLEND_MARKETS_ENDPOINT =
-  "https://api.hyperlend.finance/data/markets?chain=hyperEvm";
+import {
+  AllocationType,
+  ERC20_ABI,
+  GLUEX_QUOTE_ENDPOINT,
+  HYPERLEND_MARKETS_ENDPOINT,
+} from "./constants";
+import { HyperLendReserve, TransactionCall } from "./types";
+import Allocation from "@/app/allocation/page";
 
 /**
  * Fetches the aToken address for a given underlying asset from the HyperLend API.
@@ -63,21 +52,29 @@ async function getATokenAddress(
  * Handles POST requests to generate transaction calldata for a token deposit (swap).
  * @param {NextRequest} request - The incoming request object.
  * @body {string} inputToken - The address of the token to be deposited.
+ * @body {string} requestedOutputToken - The address of the token to receive (optional, since we get output token internally for lending).
  * @body {string} userPublicAddress - The user's public address.
  * @body {number} amount - The amount to deposit (e.g., 20.5 for 20.5 tokens).
+ * @body {string} allocationType - The type of action ("spot", "vault", "lp", "lending").
  * @returns {NextResponse} A JSON response with the transaction calldata or an error.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { inputToken, userPublicAddress, amount } = body;
+    const {
+      inputToken,
+      requestedOutputToken,
+      userPublicAddress,
+      amount,
+      allocationType,
+    } = body;
 
-    if (!inputToken || !userPublicAddress || typeof amount !== "number") {
+    if (!inputToken || !userPublicAddress || !amount || !allocationType) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Missing required parameters: inputToken (string), amount (number)",
+            "Missing required parameters: inputToken, userPublicAddress, amount, or allocationType.",
         },
         { status: 400 }
       );
@@ -86,6 +83,19 @@ export async function POST(request: NextRequest) {
     if (!ethers.isAddress(inputToken)) {
       return NextResponse.json(
         { success: false, error: "Invalid inputToken address provided." },
+        { status: 400 }
+      );
+    }
+
+    if (
+      allocationType !== AllocationType.LENDING &&
+      !ethers.isAddress(requestedOutputToken)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid requestedOutputToken address provided.",
+        },
         { status: 400 }
       );
     }
@@ -111,8 +121,21 @@ export async function POST(request: NextRequest) {
       .parseUnits(amount.toString(), decimals)
       .toString();
 
-    // Note: We need to get output token address from HyperLend API since it's not displayed in the UI directly.
-    const outputToken = await getATokenAddress(inputToken);
+    let outputToken: string;
+
+    if (allocationType === AllocationType.LENDING) {
+      // For lending, we need to get the aToken address for the input token
+      // Note: We need to get output token address from HyperLend API since it's not displayed in the UI directly.
+      console.log("Fetching aToken address for input token:", inputToken);
+      outputToken = await getATokenAddress(inputToken);
+    } else {
+      // For other allocation types, use the requested output token from the user
+      console.log(
+        "Using requested output token for allocation type:",
+        allocationType
+      );
+      outputToken = requestedOutputToken;
+    }
 
     console.log("Output token address:", outputToken);
 

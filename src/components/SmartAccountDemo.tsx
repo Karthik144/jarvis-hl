@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useSmartAccount } from "@/hooks/useSmartAccount";
 import { parseEther, isAddress, getAddress } from "viem";
+import { AllocationType } from "@/app/constants";
 
 export function SmartAccountDemo() {
   const { login, logout, authenticated, user } = usePrivy();
@@ -26,16 +27,20 @@ export function SmartAccountDemo() {
         return;
       }
 
+      // Note: If you're making any other call other than a lending allocation, then you need to pass in the output token
+      // We don't need output token for lending allocation since we get it from HyperLend API.
+      // Output token, if included, should be called requestedOutputToken
       const testApiPayload = {
         inputToken: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb", // Note: This is USDT0 on HyperEVM.
         userPublicAddress: userAddress,
         amount: 1,
+        allocationType: AllocationType.LENDING,
       };
 
       console.log("Testing /api/lending with payload:", testApiPayload);
 
       try {
-        const response = await fetch("/api/lending", {
+        const response = await fetch("/api/zap", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

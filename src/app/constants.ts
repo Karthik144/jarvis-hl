@@ -18,3 +18,10 @@ export const ButtonStyles = {
     backgroundColor: "#333",
   },
 };
+
+export enum AllocationType {
+  SPOT = "spot",
+  VAULT = "vault",
+  LP = "lp",
+  LENDING = "lending",
+}
