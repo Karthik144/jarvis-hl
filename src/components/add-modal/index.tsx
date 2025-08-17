@@ -9,16 +9,18 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import PrimaryButton from "../primary-button";
+import { Allocation } from "@/app/types";
 
 interface AddModalProps {
+  allocation: Allocation;
   open: boolean;
   onClose: () => void;
 }
 
-export default function AddModal({ open, onClose }: AddModalProps) {
+export default function AddModal({ allocation, open, onClose }: AddModalProps) {
   const [rebalanceFrequency, setRebalanceFrequency] = useState("weekly");
 
-  const handleFrequencyChange = (
+  const handleRebalanceFrequencyChange = (
     event: React.MouseEvent<HTMLElement>,
     newFrequency: string | null
   ) => {
@@ -63,11 +65,11 @@ export default function AddModal({ open, onClose }: AddModalProps) {
           <div className="flex flex-col gap-6">
             <div>
               <Typography id="allocation-settings-modal-title" variant="h4">
-                Spot
+                {allocation.category}
               </Typography>
               <div className="flex items-center gap-2 mt-2">
                 <Chip
-                  label="25% Allocation"
+                  label={`${25}% Allocation`}
                   sx={{
                     backgroundColor: "#e3f2fd",
                     color: "#1565c0",
@@ -75,10 +77,10 @@ export default function AddModal({ open, onClose }: AddModalProps) {
                   }}
                 />
                 <Chip
-                  label="Risky"
+                  label={allocation.riskLevel.description}
                   sx={{
-                    backgroundColor: "#ffebee",
-                    color: "#c62828",
+                    backgroundColor: allocation.riskLevel.bgColor,
+                    color: allocation.riskLevel.textColor,
                     fontWeight: "500",
                   }}
                 />
@@ -95,7 +97,7 @@ export default function AddModal({ open, onClose }: AddModalProps) {
               <ToggleButtonGroup
                 value={rebalanceFrequency}
                 exclusive
-                onChange={handleFrequencyChange}
+                onChange={handleRebalanceFrequencyChange}
                 aria-label="rebalance frequency"
               >
                 <ToggleButton

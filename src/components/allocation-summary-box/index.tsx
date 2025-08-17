@@ -5,18 +5,15 @@ import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOu
 import PrimaryButton from "../primary-button";
 import { useState } from "react";
 import AddModal from "../add-modal";
+import { Allocation } from "@/app/types";
 
 interface AllocationSummaryBoxProps {
-  percentage: number;
-  category: string;
-  description: string;
+  allocation: Allocation;
   hasButton?: boolean;
 }
 
 export default function AllocationSummaryBox({
-  percentage = 25,
-  category = "Spot",
-  description = "Add up to 5 assets.",
+  allocation,
   hasButton = true,
 }: AllocationSummaryBoxProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,16 +32,15 @@ export default function AllocationSummaryBox({
           <div className="flex items-start justify-between">
             <div>
               <Typography variant="h4" component="p" sx={{ lineHeight: 1.2 }}>
-                {percentage}%
+                {25}%
               </Typography>
-              <Typography variant="h6">{category}</Typography>
+              <Typography variant="h6">{allocation.category}</Typography>
             </div>
 
             {hasButton ? (
               <PrimaryButton
                 endIcon={<AddCircleOutlineOutlinedIcon />}
                 onClick={() => {
-                  console.log("BUTTON PRESSED");
                   setIsModalOpen(true);
                 }}
               >
@@ -55,13 +51,17 @@ export default function AllocationSummaryBox({
 
           <div className="mt-auto pt-4">
             <Typography variant="subtitle1" color="text.secondary">
-              {description}
+              {allocation.description}
             </Typography>
           </div>
         </div>
       </Card>
 
-      <AddModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddModal
+        allocation={allocation}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }

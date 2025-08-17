@@ -1,9 +1,14 @@
 import AllocationSummaryBox from "@/components/allocation-summary-box";
 import Navbar from "@/components/navbar";
 import { Typography } from "@mui/material";
-import { AllocationCategories } from "./constants";
 import PrimaryButton from "@/components/primary-button";
 import EastRoundedIcon from "@mui/icons-material/EastRounded";
+import {
+  LENDING_ALLOCATION,
+  LP_ALLOCATION,
+  SPOT_ALLOCATION,
+  VAULT_ALLOCATION,
+} from "./constants";
 
 export default function Allocation() {
   return (
@@ -22,29 +27,15 @@ export default function Allocation() {
         </div>
         <div className="flex flex-col gap-4 max-w-[40rem] pt-12">
           <div className="flex flex-row gap-12 ">
+            <AllocationSummaryBox allocation={SPOT_ALLOCATION} />
             <AllocationSummaryBox
-              percentage={25}
-              category={AllocationCategories.SPOT.label}
-              description={AllocationCategories.SPOT.description}
-            />
-            <AllocationSummaryBox
-              percentage={25}
-              category={AllocationCategories.VAULT.label}
-              description={AllocationCategories.VAULT.description}
+              allocation={VAULT_ALLOCATION}
               hasButton={false}
             />
           </div>
           <div className="flex flex-row gap-12 ">
-            <AllocationSummaryBox
-              percentage={25}
-              category={AllocationCategories.LENDING.label}
-              description={AllocationCategories.LENDING.description}
-            />
-            <AllocationSummaryBox
-              percentage={25}
-              category={AllocationCategories.LP.label}
-              description={AllocationCategories.LP.description}
-            />
+            <AllocationSummaryBox allocation={LENDING_ALLOCATION} />
+            <AllocationSummaryBox allocation={LP_ALLOCATION} />
           </div>
 
           <div className="pt-12">
