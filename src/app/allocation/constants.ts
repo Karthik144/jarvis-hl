@@ -1,4 +1,4 @@
-export const SPOT_ALLOCATION = {
+export const SPOT_ALLOCATION_FORMAT = {
   category: "Spot",
   description: "Add up to 5 assets.",
   riskLevel: {
@@ -9,7 +9,7 @@ export const SPOT_ALLOCATION = {
   editTitleName: "Assets",
 };
 
-export const VAULT_ALLOCATION = {
+export const VAULT_ALLOCATION_FORMAT = {
   category: "HL Vault",
   description: "Only support one vault.",
   riskLevel: {
@@ -20,7 +20,7 @@ export const VAULT_ALLOCATION = {
   editTitleName: "",
 };
 
-export const LP_ALLOCATION = {
+export const LP_ALLOCATION_FORMAT = {
   category: "LP Pools",
   description: "Add up to 5 pools.",
   riskLevel: {
@@ -31,7 +31,7 @@ export const LP_ALLOCATION = {
   editTitleName: "Liquidity Pools",
 };
 
-export const LENDING_ALLOCATION = {
+export const LENDING_ALLOCATION_FORMAT = {
   category: "Lending",
   description: "Add up to 5 lending markets.",
   riskLevel: {

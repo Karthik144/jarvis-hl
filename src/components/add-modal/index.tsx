@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Modal,
   Card,
@@ -7,18 +9,45 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "../primary-button";
-import { Allocation } from "@/app/types";
+import { AllocationFormat, AllocationItem } from "@/types";
+import { usePortfolio } from "@/providers/PortfolioProvider";
 
 interface AddModalProps {
-  allocation: Allocation;
+  format: AllocationFormat;
+  allocation: AllocationItem;
   open: boolean;
   onClose: () => void;
 }
 
-export default function AddModal({ allocation, open, onClose }: AddModalProps) {
+export default function AddModal({
+  format,
+  allocation,
+  open,
+  onClose,
+}: AddModalProps) {
+  const { dispatch } = usePortfolio();
+
+  const [addresses, setAddresses] = useState<string[]>(["", "", "", "", ""]);
   const [rebalanceFrequency, setRebalanceFrequency] = useState("weekly");
+
+  useEffect(() => {
+    if (open) {
+      const currentAddresses = allocation.allocations;
+      const newAddresses = [...currentAddresses];
+      while (newAddresses.length < 5) {
+        newAddresses.push("");
+      }
+      setAddresses(newAddresses);
+    }
+  }, [open, allocation.allocations]);
+
+  const handleAddressChange = (index: number, value: string) => {
+    const newAddresses = [...addresses];
+    newAddresses[index] = value;
+    setAddresses(newAddresses);
+  };
 
   const handleRebalanceFrequencyChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -29,11 +58,27 @@ export default function AddModal({ allocation, open, onClose }: AddModalProps) {
     }
   };
 
-  const assetInputFields = Array.from({ length: 5 }, (_, i) => (
+  const handleSubmit = () => {
+    const finalAddresses = addresses.filter((addr) => addr.trim() !== "");
+    console.log("Submitting addresses:", finalAddresses);
+    dispatch({
+      type: "UPDATE_ALLOCATION",
+      payload: {
+        category: allocation.category,
+        allocations: finalAddresses,
+      },
+    });
+    onClose();
+  };
+
+  const assetInputFields = addresses.map((address, i) => (
     <TextField
       key={i}
       variant="outlined"
       fullWidth
+      value={address}
+      onChange={(e) => handleAddressChange(i, e.target.value)}
+      placeholder={"0x..."}
       sx={{
         "& .MuiOutlinedInput-root": {
           borderRadius: "12px",
@@ -65,7 +110,7 @@ export default function AddModal({ allocation, open, onClose }: AddModalProps) {
           <div className="flex flex-col gap-6">
             <div>
               <Typography id="allocation-settings-modal-title" variant="h4">
-                {allocation.category}
+                {format.category}
               </Typography>
               <div className="flex items-center gap-2 mt-2">
                 <Chip
@@ -77,10 +122,10 @@ export default function AddModal({ allocation, open, onClose }: AddModalProps) {
                   }}
                 />
                 <Chip
-                  label={allocation.riskLevel.description}
+                  label={format.riskLevel.description}
                   sx={{
-                    backgroundColor: allocation.riskLevel.bgColor,
-                    color: allocation.riskLevel.textColor,
+                    backgroundColor: format.riskLevel.bgColor,
+                    color: format.riskLevel.textColor,
                     fontWeight: "500",
                   }}
                 />
@@ -125,7 +170,7 @@ export default function AddModal({ allocation, open, onClose }: AddModalProps) {
             </div>
 
             <div className="flex justify-end">
-              <PrimaryButton onClick={onClose}>Submit</PrimaryButton>
+              <PrimaryButton onClick={handleSubmit}>Submit</PrimaryButton>
             </div>
           </div>
         </Card>

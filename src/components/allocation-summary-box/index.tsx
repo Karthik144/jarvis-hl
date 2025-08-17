@@ -5,14 +5,16 @@ import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOu
 import PrimaryButton from "../primary-button";
 import { useState } from "react";
 import AddModal from "../add-modal";
-import { Allocation } from "@/app/types";
+import { AllocationFormat, AllocationItem } from "@/types";
 
 interface AllocationSummaryBoxProps {
-  allocation: Allocation;
+  format: AllocationFormat;
+  allocation: AllocationItem;
   hasButton?: boolean;
 }
 
 export default function AllocationSummaryBox({
+  format,
   allocation,
   hasButton = true,
 }: AllocationSummaryBoxProps) {
@@ -34,7 +36,7 @@ export default function AllocationSummaryBox({
               <Typography variant="h4" component="p" sx={{ lineHeight: 1.2 }}>
                 {25}%
               </Typography>
-              <Typography variant="h6">{allocation.category}</Typography>
+              <Typography variant="h6">{format.category}</Typography>
             </div>
 
             {hasButton ? (
@@ -51,13 +53,14 @@ export default function AllocationSummaryBox({
 
           <div className="mt-auto pt-4">
             <Typography variant="subtitle1" color="text.secondary">
-              {allocation.description}
+              {format.description}
             </Typography>
           </div>
         </div>
       </Card>
 
       <AddModal
+        format={format}
         allocation={allocation}
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}

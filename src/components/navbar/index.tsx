@@ -17,7 +17,6 @@ export default function Navbar() {
   // To-Do: Use our own UI for login instead of Privy's
   useEffect(() => {
     const handleUserSession = async () => {
-      console.log("INSIDE HANDLE USER SESSION");
       if (isSignedIn && user?.wallet?.address) {
         console.log("User is authenticated, checking database...");
         await findOrCreateUser(user.wallet.address);

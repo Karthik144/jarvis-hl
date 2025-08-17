@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useSmartAccount } from "@/hooks/useSmartAccount";
 import { parseEther, isAddress, getAddress } from "viem";
-import { AllocationType } from "@/app/constants";
+import { AllocationType } from "@/constants";
 
 export function SmartAccountDemo() {
   const { login, logout, authenticated, user } = usePrivy();
