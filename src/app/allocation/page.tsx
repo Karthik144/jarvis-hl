@@ -15,6 +15,7 @@ import { usePortfolio } from "@/providers/PortfolioProvider";
 import { usePrivy } from "@privy-io/react-auth";
 import { useState } from "react";
 import { updateUserPortfolio } from "@/utils/updateUserPortfolio";
+import { AllocationType } from "@/constants";
 
 export default function Allocation() {
   const { state: portfolio } = usePortfolio();
@@ -22,15 +23,20 @@ export default function Allocation() {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleContinue = async () => {
-    if (!user?.wallet?.address) {
-      console.error(
-        "Cannot save portfolio: User is not authenticated or has no wallet address."
-      );
-      return;
-    }
+    // if (!user?.wallet?.address) {
+    //   console.error(
+    //     "Cannot save portfolio: User is not authenticated or has no wallet address."
+    //   );
+    //   return;
+    // }
 
     setIsSaving(true);
-    const result = await updateUserPortfolio(user?.wallet?.address, portfolio);
+
+    // To-Do: Change this to privy user address
+    // Just for testing rn
+    const userAddress = "0x02B64a79Aa2f080C755B9F6AFd654BeB67f548F3";
+    const result = await updateUserPortfolio(userAddress, portfolio);
+    await createPositions();
 
     setIsSaving(false);
 
@@ -38,6 +44,45 @@ export default function Allocation() {
       console.log("Portfolio saved successfully!", result);
     } else {
       console.error("Failed to save portfolio.");
+    }
+  };
+
+  const createPositions = async () => {
+    // To-Do: Change this to privy user address
+    // Just for testing rn
+    const userAddress = "0x02B64a79Aa2f080C755B9F6AFd654BeB67f548F3";
+    // Note: If you're making any other call other than a lending allocation, then you need to pass in the output token
+    // We don't need output token for lending allocation since we get it from HyperLend API.
+    // Output token, if included, should be called requestedOutputToken
+    // For creating a vault allocation, you just need to include the output token address as the yield bearing asset
+    const testApiPayload = {
+      inputToken: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb", // Note: This is USDT0 on HyperEVM.
+      userPublicAddress: userAddress,
+      amount: 1,
+      allocationType: AllocationType.LENDING,
+    };
+
+    try {
+      const response = await fetch("/api/zap", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(testApiPayload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error("API call failed:", result);
+      } else {
+        console.log(
+          "API call successful! Received transactions for bundler:",
+          result.transactions
+        );
+      }
+    } catch (error) {
+      console.error("Error creating positions:", error);
     }
   };
 

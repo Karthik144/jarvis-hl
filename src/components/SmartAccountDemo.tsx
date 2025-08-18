@@ -38,7 +38,7 @@ export function SmartAccountDemo() {
         allocationType: AllocationType.LENDING,
       };
 
-      console.log("Testing /api/lending with payload:", testApiPayload);
+      console.log("Testing /api/zap with payload:", testApiPayload);
 
       try {
         const response = await fetch("/api/zap", {

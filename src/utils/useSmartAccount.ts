@@ -206,8 +206,8 @@ export function useSmartAccount() {
       );
 
       try {
-        const txHash = await state.smartAccountClient.sendTransactions({
-          transactions: transactions,
+        const txHash = await state.smartAccountClient.sendTransaction({
+          calls: transactions,
         });
 
         console.log(
