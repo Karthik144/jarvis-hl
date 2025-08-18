@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { ButtonStyles, AppBarStyles } from "./constants";
 import { usePrivy } from "@privy-io/react-auth";
 import { findOrCreateUser } from "@/utils/findOrCreateUser";
+import { useSmartAccount } from "@/utils/useSmartAccount";
 
 export default function Navbar() {
   const { ready, authenticated, user, login, logout } = usePrivy();
+  const { createSmartAccount } = useSmartAccount();
   const router = useRouter();
 
   const isSignedIn = ready && authenticated;
@@ -19,13 +21,16 @@ export default function Navbar() {
     const handleUserSession = async () => {
       if (isSignedIn && user?.wallet?.address) {
         console.log("User is authenticated, checking database...");
-        await findOrCreateUser(user.wallet.address);
+        await Promise.all([
+          findOrCreateUser(user.wallet.address),
+          createSmartAccount(),
+        ]);
         router.push("/dashboard");
       }
     };
 
     handleUserSession();
-  }, [isSignedIn, router, user?.wallet?.address]);
+  }, [isSignedIn, router, user?.wallet?.address, createSmartAccount]);
 
   const handleLogout = async () => {
     console.log("Logging out...");

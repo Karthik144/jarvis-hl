@@ -26,3 +26,11 @@ export type PortfolioAction = {
     allocations: string[];
   };
 };
+
+export interface SmartAccountState {
+  isLoading: boolean;
+  smartAccount: any | null;
+  smartAccountAddress: string | null;
+  smartAccountClient: any | null;
+  error: string | null;
+}

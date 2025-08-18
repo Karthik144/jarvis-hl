@@ -7,7 +7,6 @@ import {
   HYPERLEND_MARKETS_ENDPOINT,
 } from "./constants";
 import { HyperLendReserve, TransactionCall } from "./types";
-import Allocation from "@/app/allocation/page";
 
 /**
  * Fetches the aToken address for a given underlying asset from the HyperLend API.
