@@ -34,3 +34,15 @@ export interface SmartAccountState {
   smartAccountClient: any | null;
   error: string | null;
 }
+
+export interface TokenData {
+  price_usd: string;
+  address: string;
+}
+
+type TokenPrice = {
+  token_address: string;
+  initial_price: number;
+};
+
+export type InitialAssetPrices = TokenPrice[];
