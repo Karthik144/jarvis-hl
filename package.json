@@ -29,11 +29,11 @@
     "jsonwebtoken": "^9.0.2",
     "next": "15.4.6",
     "next-auth": "^4.24.10",
-    "permissionless": "^0.2.53",
+    "permissionless": "^0.2.10",
     "prisma": "^5.22.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "viem": "^2.34.0",
+    "viem": "^2.31.7",
     "wagmi": "^2.16.3",
     "web3": "^4.15.0",
     "zod": "^3.23.0"

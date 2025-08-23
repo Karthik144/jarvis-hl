@@ -1,4 +1,4 @@
-// Note: Run thsi script with "npx ts-node --project tsconfig.scripts.json scripts/rebalance.ts"
+// Note: Run this script with "npx ts-node --project tsconfig.scripts.json scripts/rebalance.ts"
 
 import axios from "axios";
 import { TokenData } from "./types";
