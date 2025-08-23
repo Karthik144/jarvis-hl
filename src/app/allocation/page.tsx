@@ -22,7 +22,6 @@ export default function Allocation() {
   const { state: portfolio } = usePortfolio();
   const { user } = usePrivy();
   const [isSaving, setIsSaving] = useState(false);
-  const { sendBatchOperation } = useSmartAccount();
 
   const handleContinue = async () => {
     // if (!user?.wallet?.address) {
