@@ -28,10 +28,10 @@ export type PortfolioAction = {
 };
 
 export interface SmartAccountState {
-  isLoading: boolean;
-  smartAccount: any | null;
-  smartAccountAddress: string | null;
-  smartAccountClient: any | null;
+  smartWalletAddress: string | null;
+  smartWalletType: any | null;
+  lastVerified: Date | null;
+  firstVerified: Date | null;
   error: string | null;
 }
 

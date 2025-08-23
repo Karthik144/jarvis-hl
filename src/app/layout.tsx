@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <PrivyAuthProvider>
-          <PortfolioProvider>{children}</PortfolioProvider>
+            <PortfolioProvider>{children}</PortfolioProvider>
         </PrivyAuthProvider>
       </body>
     </html>

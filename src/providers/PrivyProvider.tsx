@@ -1,7 +1,8 @@
 'use client';
 
 import { PrivyProvider } from '@privy-io/react-auth';
-import { sepolia, Chain } from 'viem/chains';  
+import { sepolia, Chain } from 'viem/chains';
+import { SmartWalletsProvider } from '@privy-io/react-auth/smart-wallets'; 
 
 const hyperEVM: Chain = {
   id: 999, 
@@ -61,7 +62,7 @@ export function PrivyAuthProvider({ children }: Props) {
       config={{
         // Configure Privy to create embedded wallets for users without wallets
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
+          createOnLogin: 'all-users',
           // Turn off confirmation modals so we can use our own UIs
           showWalletUIs: false,
         },
@@ -80,8 +81,9 @@ export function PrivyAuthProvider({ children }: Props) {
         supportedChains: [hyperEVM], 
         defaultChain: hyperEVM,
       }}
-    >
+    ><SmartWalletsProvider>
       {children}
+      </SmartWalletsProvider>
     </PrivyProvider>
   );
 }
