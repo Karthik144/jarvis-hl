@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// WE CAN USE THIS IN FUTURE(Will make our code DB agnostic- AWS || Supabase || GCP etc.),
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {

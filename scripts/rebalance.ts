@@ -1,4 +1,4 @@
-// Note: Run thsi script with "npx ts-node --project tsconfig.scripts.json scripts/rebalance.ts"
+// Note: Run this script with "npx ts-node --project tsconfig.scripts.json scripts/rebalance.ts"
 
 import axios from "axios";
 import { TokenData } from "./types";
@@ -47,6 +47,7 @@ export async function getCurrentTokenPrice(
   }
 }
 
+// Example usage with USDC on Hyperevm:
 (async () => {
   const usdcAddress = "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb";
   const tokenData = await getCurrentTokenPrice(usdcAddress);
