@@ -4,6 +4,10 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 const AllocationItemSchema = z.object({
   category: z.enum(["spot", "vault", "lp", "lending"]),
   percentage: z.number().min(0).max(100),
@@ -42,7 +46,7 @@ RULES:
 
 Categories explained:
 - spot: Direct cryptocurrency holdings
-- vault: Automated yield farming strategies
+- vault: Hyperliquid yield vault
 - lp: Liquidity provision in DEXs
 - lending: DeFi lending protocols
 
@@ -136,10 +140,6 @@ Risk profiles:
 
 async function runFinancialAdvisor() {
   const advisor = new FinancialAdvisor();
-
-  console.log(
-    "I'll ask you up to 5 questions to create your optimal DeFi portfolio.\n"
-  );
 
   try {
     let state = await advisor.askNextQuestion();
