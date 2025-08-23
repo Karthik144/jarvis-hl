@@ -22,9 +22,7 @@ export default function Navbar() {
     const handleUserSession = async () => {
       if (isSignedIn && user?.wallet?.address) {
         console.log("User is authenticated, checking database...");
-        await Promise.all([
-          findOrCreateUser(user.wallet.address),
-        ]);
+        await Promise.all([findOrCreateUser(user.wallet.address)]);
         // router.push("/dashboard");
       }
     };
@@ -59,7 +57,9 @@ export default function Navbar() {
         {/* Smart Wallet Address Display */}
         <Box sx={{ mx: 2 }}>
           <Typography variant="body2" color="text.secondary" noWrap>
-            {smartWalletAddress ? `Smart Wallet: ${smartWalletAddress}` : "No Smart Wallet"}
+            {smartWalletAddress
+              ? `Smart Wallet: ${smartWalletAddress}`
+              : "No Smart Wallet"}
           </Typography>
         </Box>
         <Box>
