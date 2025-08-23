@@ -74,10 +74,10 @@ export function useSmartAccount() {
         transport: http("https://rpc.hyperliquid.xyz/evm"),
       });
 
-      const pimlicoApiKey = process.env.NEXT_PUBLIC_PIMLICO_API_KEY;
+      const pimlicoApiKey = process.env.NEXT_PIMLICO_API_KEY;
       if (!pimlicoApiKey) {
         throw new Error(
-          "NEXT_PUBLIC_PIMLICO_API_KEY environment variable is required"
+          "NEXT_PIMLICO_API_KEY environment variable is required"
         );
       }
 
