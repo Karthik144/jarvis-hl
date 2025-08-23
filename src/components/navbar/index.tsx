@@ -25,7 +25,7 @@ export default function Navbar() {
           findOrCreateUser(user.wallet.address),
           createSmartAccount(),
         ]);
-        router.push("/dashboard");
+        // router.push("/dashboard");
       }
     };
 
