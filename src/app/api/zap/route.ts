@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       inputToken,
       requestedOutputToken,
       userPublicAddress,
+      embeddedWalletAddress,
       amount,
       allocationType,
     } = body;
@@ -151,7 +152,10 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
+    let outputReceiver = userPublicAddress;
+    if(allocationType === AllocationType.SPOT) {
+      outputReceiver = embeddedWalletAddress || userPublicAddress;
+    }
     // Fetch quote from GlueX
     const quoteResponse = await fetch(GLUEX_QUOTE_ENDPOINT, {
       method: "POST",
@@ -162,7 +166,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         chainID: CHAIN_ID,
         userAddress: userPublicAddress,
-        outputReceiver: userPublicAddress,
+        outputReceiver: outputReceiver,
         uniquePID: GLUEX_UNIQUE_PID,
         inputToken,
         outputToken,
