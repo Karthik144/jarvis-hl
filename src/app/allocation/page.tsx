@@ -1,22 +1,55 @@
 "use client";
 
-import AllocationSummaryBox from "@/components/allocation-summary-box";
+import { useEffect, useState } from "react";
+import {
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from "@mui/material";
 import Navbar from "@/components/navbar";
-import { Typography } from "@mui/material";
 import PrimaryButton from "@/components/primary-button";
+import AllocationSummaryBox from "@/components/allocation-summary-box";
 import EastRoundedIcon from "@mui/icons-material/EastRounded";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import { usePortfolio } from "@/providers/PortfolioProvider";
+import { useRouter } from "next/navigation";
+import { usePrivy } from "@privy-io/react-auth";
+import { getAdvisorAssessment } from "@/utils/getAdvisorAssessment";
+import { AdvisorAssessment } from "@/types";
 import {
   LENDING_ALLOCATION_FORMAT,
   LP_ALLOCATION_FORMAT,
   SPOT_ALLOCATION_FORMAT,
   VAULT_ALLOCATION_FORMAT,
 } from "./constants";
-import { usePortfolio } from "@/providers/PortfolioProvider";
-import { useRouter } from "next/navigation";
 
 export default function Allocation() {
   const { state: portfolio } = usePortfolio();
   const router = useRouter();
+  const { user } = usePrivy();
+
+  // 2. Add state to hold the fetched assessment data
+  const [assessment, setAssessment] = useState<AdvisorAssessment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 3. Fetch the advisor assessment when the component mounts
+  useEffect(() => {
+    console.log("INSIDE USE EFFECT");
+    const fetchAssessment = async () => {
+      if (user?.wallet?.address) {
+        setIsLoading(true);
+        const fetchedAssessment = await getAdvisorAssessment(
+          user.wallet.address
+        );
+        setAssessment(fetchedAssessment);
+        setIsLoading(false);
+      }
+    };
+
+    fetchAssessment();
+  }, [user?.wallet?.address]);
 
   const handleContinue = () => {
     router.push("/preferences");
@@ -31,12 +64,44 @@ export default function Allocation() {
           <Typography variant="h6" fontWeight={550}>
             Here’s the portfolio I designed for you...
           </Typography>
-          <Typography variant="body1">
-            Start adding assets, LP pools, or lending markets you prefer for
-            each allocation category.
+          <Typography variant="body1" color="text.secondary">
+            Your portfolio is based on a{" "}
+            <b className="text-black">{assessment?.risk_profile || "..."}</b>{" "}
+            risk profile. Start adding assets you prefer for each category.
           </Typography>
         </div>
-        <div className="flex flex-col gap-4 max-w-[40rem] pt-12">
+
+        <div className="max-w-[40rem] pt-8">
+          {!isLoading && assessment && (
+            <Accordion
+              variant="outlined"
+              sx={{
+                borderRadius: 2,
+                "&:before": { display: "none" },
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="reasoning-panel-content"
+                id="reasoning-panel-header"
+              >
+                <div className="flex items-center gap-2">
+                  <PsychologyIcon color="action" />
+                  <Typography fontWeight={500}>
+                    View Reasoning Behind This Portfolio
+                  </Typography>
+                </div>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography color="text.secondary">
+                  {assessment.reasoning}
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-4 max-w-[40rem] pt-8">
           <div className="flex flex-row gap-12">
             <AllocationSummaryBox
               format={SPOT_ALLOCATION_FORMAT}
