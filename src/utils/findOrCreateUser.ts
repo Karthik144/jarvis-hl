@@ -1,13 +1,17 @@
 import { supabase } from "./supabaseClient";
 
 /**
- * Finds a user by their public address. If the user doesn't exist, it creates a new entry.
- * This function is idempotent, meaning it can be called multiple times without creating duplicate users.
+ * Finds a user by their public address. If the user doesn't exist, it creates a new entry
+ * with their public address and embedded account details.
  *
  * @param publicAddress The user's public wallet address.
- * @returns The user's data from the database, or null if an error occurs or the address is invalid.
+ * @param embeddedAccount The user's embedded account data from Privy.
+ * @returns The user's data from the database, or null if an error occurs.
  */
-export const findOrCreateUser = async (publicAddress: string | undefined) => {
+export const findOrCreateUser = async (
+  publicAddress: string | undefined,
+  embeddedAccount: any
+) => {
   if (!publicAddress) {
     console.error(
       "findOrCreateUser Error: publicAddress is missing or invalid."
@@ -34,7 +38,10 @@ export const findOrCreateUser = async (publicAddress: string | undefined) => {
     console.log(`Creating new user for ${publicAddress}...`);
     const { data: newUser, error: insertError } = await supabase
       .from("users")
-      .insert({ userPublicAddress: publicAddress })
+      .insert({
+        userPublicAddress: publicAddress,
+        embedded_account: embeddedAccount,
+      })
       .select()
       .single();
 

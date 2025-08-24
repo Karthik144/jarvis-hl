@@ -20,12 +20,22 @@ export default function Navbar() {
     const handleUserSession = async () => {
       if (isSignedIn && user?.wallet?.address) {
         console.log("User is authenticated, checking database...");
-        await Promise.all([findOrCreateUser(user.wallet.address)]);
+
+        const linkedAccounts = user?.linkedAccounts;
+
+        console.log("EMBEDDED WALLET:", linkedAccounts);
+
+        const embeddedAccount = linkedAccounts?.[1] || "";
+
+        console.log("EMBEDDED ACCOUNT ID:", embeddedAccount);
+        await Promise.all([
+          findOrCreateUser(user.wallet.address, embeddedAccount),
+        ]);
       }
     };
 
     handleUserSession();
-  }, [isSignedIn, router, user?.wallet?.address]);
+  }, [isSignedIn, router, user?.wallet?.address, user?.linkedAccounts]);
 
   const handleLogout = async () => {
     console.log("Logging out...");
