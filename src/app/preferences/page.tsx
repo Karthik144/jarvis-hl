@@ -16,12 +16,16 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import PrimaryButton from "@/components/primary-button";
+import EastRoundedIcon from "@mui/icons-material/EastRounded";
+import { useRouter } from "next/navigation";
 
 export default function Preferences() {
   const [rebalanceFrequency, setRebalanceFrequency] = useState("weekly");
   const [rebalanceEnabled, setRebalanceEnabled] = useState(true);
   const [copied, setCopied] = useState(false);
   const { user } = usePrivy();
+  const router = useRouter();
 
   const smartWalletAddress = user?.smartWallet?.address || "";
 
@@ -46,6 +50,10 @@ export default function Preferences() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleContinue = () => {
+    router.push("/creating");
   };
 
   return (
@@ -98,12 +106,19 @@ export default function Preferences() {
               </ToggleButton>
             </ToggleButtonGroup>
           )}
-          <Alert severity="info" icon={<InfoOutlinedIcon fontSize="inherit" />}>
-            Session keys act like a temporary, secure pass you approve, allowing
-            us to automatically handle rebalancing on your behalf without
-            needing your signature for every action. You control the duration,
-            and the key automatically becomes invalid when the time expires.
-          </Alert>
+
+          {rebalanceEnabled && (
+            <Alert
+              severity="info"
+              icon={<InfoOutlinedIcon fontSize="inherit" />}
+            >
+              Session keys act like a temporary, secure pass you approve,
+              allowing us to automatically handle rebalancing on your behalf
+              without needing your signature for every action. You control the
+              duration, and the key automatically becomes invalid when the time
+              expires.
+            </Alert>
+          )}
         </div>
 
         <div className="flex flex-col gap-2 mt-16 max-w-xl">
@@ -154,6 +169,15 @@ export default function Preferences() {
               </IconButton>
             </Tooltip>
           </Box>
+
+          <div className="pt-12">
+            <PrimaryButton
+              onClick={handleContinue}
+              endIcon={<EastRoundedIcon />}
+            >
+              Continue
+            </PrimaryButton>
+          </div>
         </div>
       </main>
     </div>

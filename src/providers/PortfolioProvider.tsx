@@ -6,7 +6,11 @@ import { AllocationType } from "@/constants";
 
 const initialState: PortfolioState = [
   { category: AllocationType.SPOT, allocations: [], percentage: 25 },
-  { category: AllocationType.VAULT, allocations: [], percentage: 25 },
+  {
+    category: AllocationType.VAULT,
+    allocations: ["0x1359b05241cA5076c9F59605214f4F84114c0dE8"], // Wrapped HLP Token Address
+    percentage: 25,
+  },
   { category: AllocationType.LP, allocations: [], percentage: 25 },
   { category: AllocationType.LENDING, allocations: [], percentage: 25 },
 ];
