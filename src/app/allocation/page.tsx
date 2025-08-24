@@ -24,6 +24,7 @@ import {
   SPOT_ALLOCATION_FORMAT,
   VAULT_ALLOCATION_FORMAT,
 } from "./constants";
+import { AllocationType } from "@/constants";
 
 export default function Allocation() {
   const { state: portfolio } = usePortfolio();
@@ -53,6 +54,16 @@ export default function Allocation() {
 
   const handleContinue = () => {
     router.push("/preferences");
+  };
+
+  const findAllocation = (category: AllocationType) => {
+    return (
+      portfolio.find((item) => item.category === category) || {
+        category,
+        percentage: 0,
+        allocations: [],
+      }
+    );
   };
 
   return (
@@ -105,22 +116,22 @@ export default function Allocation() {
           <div className="flex flex-row gap-12">
             <AllocationSummaryBox
               format={SPOT_ALLOCATION_FORMAT}
-              allocation={portfolio[0]}
+              allocation={findAllocation(AllocationType.SPOT)}
             />
             <AllocationSummaryBox
               format={VAULT_ALLOCATION_FORMAT}
-              allocation={portfolio[1]}
+              allocation={findAllocation(AllocationType.VAULT)}
               hasButton={false}
             />
           </div>
           <div className="flex flex-row gap-12">
             <AllocationSummaryBox
               format={LENDING_ALLOCATION_FORMAT}
-              allocation={portfolio[2]}
+              allocation={findAllocation(AllocationType.LENDING)}
             />
             <AllocationSummaryBox
               format={LP_ALLOCATION_FORMAT}
-              allocation={portfolio[3]}
+              allocation={findAllocation(AllocationType.LP)}
             />
           </div>
 

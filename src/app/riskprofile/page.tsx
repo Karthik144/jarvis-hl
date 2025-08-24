@@ -144,6 +144,8 @@ export default function RiskProfilePage() {
         };
       });
 
+      console.log("PORTFOLIO STATE:", portfolioState);
+
       dispatch({
         type: "SET_PORTFOLIO_PERCENTAGES",
         payload: portfolioState,
