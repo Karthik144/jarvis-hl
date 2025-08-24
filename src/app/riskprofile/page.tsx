@@ -4,8 +4,11 @@ import AgentMessage from "@/components/agent-message";
 import Navbar from "@/components/navbar";
 import PromptBar from "@/components/prompt-bar";
 import UserMessage from "@/components/user-message";
-import { Typography } from "@mui/material";
-import React from "react";
+import { Typography, Button } from "@mui/material";
+import EastRoundedIcon from "@mui/icons-material/EastRounded";
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { AdvisorApiResponse } from "@/lib/advisor/types";
 
 interface Message {
   type: "agent" | "user";
@@ -13,23 +16,116 @@ interface Message {
 }
 
 export default function RiskProfilePage() {
-  const [messages, setMessages] = React.useState<Message[]>([
-    { type: "agent", text: "What's your risk appititie?" },
-  ]);
+  const router = useRouter();
 
-  const handleSendMessage = (messageText: string) => {
-    const newUserMessage: Message = { type: "user", text: messageText };
-    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isComplete, setIsComplete] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-    setTimeout(() => {
-      const agentResponse: Message = {
-        type: "agent",
-        text: `Got it. You said: "${messageText}". What are your long term financial goals?`,
-      };
-      setMessages((prev) => [...prev, agentResponse]);
-    }, 1000);
+  const conversationEndRef = useRef<HTMLDivElement>(null);
 
-    console.log("User sent:", messageText);
+  useEffect(() => {
+    conversationEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (isComplete) {
+      router.push("/allocation");
+    }
+  }, [isComplete, router]);
+
+  useEffect(() => {
+    const startConversation = async () => {
+      try {
+        const response = await fetch("/api/advisor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!response.ok) throw new Error("API Error");
+
+        const data: AdvisorApiResponse = await response.json();
+        if (!data.isComplete) {
+          setMessages([{ type: "agent", text: data.question }]);
+          setSessionId(data.sessionId);
+        }
+      } catch (error) {
+        setMessages([
+          {
+            type: "agent",
+            text: "Sorry, I'm having trouble connecting. Please try refreshing the page.",
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    startConversation();
+  }, []);
+
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim() || isLoading) return;
+
+    setMessages((prev) => [...prev, { type: "user", text: messageText }]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/advisor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userResponse: messageText, sessionId }),
+      });
+      if (!response.ok) throw new Error("API Error");
+
+      const data: AdvisorApiResponse = await response.json();
+
+      if (data.isComplete) {
+        const { allocation } = data;
+        const finalMessages: Message[] = [
+          {
+            type: "agent",
+            text: `Great! Based on our conversation, you have a **${allocation.risk_profile}** profile. Here is your recommended allocation:`,
+          },
+          {
+            type: "agent",
+            text: allocation.allocations
+              .map((a) => `- **${a.category.toUpperCase()}**: ${a.percentage}%`)
+              .join("\n"),
+          },
+          {
+            type: "agent",
+            text: `**Reasoning:** ${allocation.reasoning}`,
+          },
+        ];
+        setMessages((prev) => [...prev, ...finalMessages]);
+
+        const orderedAllocation = ["spot", "vault", "lending", "lp"].map(
+          (cat) =>
+            allocation.allocations.find((a) => a.category === cat) || {
+              category: cat,
+              percentage: 0,
+            }
+        );
+        console.log("ALLOCATION:", orderedAllocation);
+        setIsComplete(true);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { type: "agent", text: data.question },
+        ]);
+      }
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "agent",
+          text: "Sorry, an error occurred. Please try sending your message again.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,13 +143,19 @@ export default function RiskProfilePage() {
           </div>
 
           <div className="space-y-6">
-            {messages.map((msg, index) =>
-              msg.type === "agent" ? (
-                <AgentMessage key={index} message={msg.text} />
-              ) : (
-                <UserMessage key={index} message={msg.text} />
-              )
-            )}
+            {messages.map((msg, index) => {
+              if (msg.type === "agent") {
+                return <AgentMessage key={index} message={msg.text} />;
+              } else {
+                return (
+                  <div key={index} className="flex justify-end">
+                    <UserMessage message={msg.text} />
+                  </div>
+                );
+              }
+            })}
+            {isLoading && <AgentMessage message="..." />}
+            <div ref={conversationEndRef} />
           </div>
         </div>
       </main>
