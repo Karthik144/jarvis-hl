@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { http, createPublicClient, parseUnits, encodeFunctionData } from "https://esm.sh/viem@2.21.1";
-import * as crypto from "https://esm.sh/crypto@1.0.1";
 import canonicalize from "https://esm.sh/canonicalize@2.0.0";
 
 // Constants for GlueX
@@ -58,8 +57,6 @@ const publicClient = createPublicClient({
   chain: {
     id: Number(CHAIN_ID),
     name: "HyperEVM",
-    network: "hyperevm",
-    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
     rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
   },
   transport: http(),
