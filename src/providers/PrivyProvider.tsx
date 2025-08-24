@@ -60,7 +60,7 @@ export function PrivyAuthProvider({ children }: Props) {
     <PrivyProvider
       appId={appId}
       config={{
-        // Configure Privy to create embedded wallets for users without wallets
+        // Configure Privy to create embedded wallets for all users wallets
         embeddedWallets: {
           createOnLogin: 'all-users',
           // Turn off confirmation modals so we can use our own UIs
