@@ -34,7 +34,7 @@ export default function AllocationSummaryBox({
           <div className="flex items-start justify-between">
             <div>
               <Typography variant="h4" component="p" sx={{ lineHeight: 1.2 }}>
-                {25}%
+                {allocation.percentage}%
               </Typography>
               <Typography variant="h6">{format.category}</Typography>
             </div>

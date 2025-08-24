@@ -9,10 +9,10 @@ import {
   LENDING_ALLOCATION_FORMAT,
   LP_ALLOCATION_FORMAT,
   SPOT_ALLOCATION_FORMAT,
-  VAULT_ALLOCATION_FORMAT
+  VAULT_ALLOCATION_FORMAT,
 } from "./constants";
 import { usePortfolio } from "@/providers/PortfolioProvider";
-import {AllocationType} from "@/constants";
+import { AllocationType } from "@/constants";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useState, useEffect } from "react";
@@ -25,11 +25,11 @@ export default function Allocation() {
   const { client } = useSmartWallets();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [usdtBalance, setUsdtBalance] = useState<string | null>(null); // USDT balance in formatted string (e.g., "5.0")
+  const [usdtBalance, setUsdtBalance] = useState<string | null>(null);
 
   // Constants
   const USDT_ADDRESS = "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb"; // USDT on HyperEVM
-  const HYPEREVM_RPC_URL = process.env.NEXT_PUBLIC_HYPEREVM_RPC_URL
+  const HYPEREVM_RPC_URL = process.env.NEXT_PUBLIC_HYPEREVM_RPC_URL;
   const ERC20_ABI = [
     "function balanceOf(address) view returns (uint256)",
     "function decimals() view returns (uint8)",
@@ -45,7 +45,11 @@ export default function Allocation() {
 
       try {
         const provider = new ethers.JsonRpcProvider(HYPEREVM_RPC_URL);
-        const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
+        const usdtContract = new ethers.Contract(
+          USDT_ADDRESS,
+          ERC20_ABI,
+          provider
+        );
         const balance = await usdtContract.balanceOf(user.smartWallet.address);
         const decimals = await usdtContract.decimals();
         const formattedBalance = ethers.formatUnits(balance, decimals);
@@ -84,25 +88,35 @@ export default function Allocation() {
       for (const allocation of portfolio) {
         // Skip non-lending allocations for testing
         if (allocation.category !== AllocationType.LENDING) {
-          console.log(`Skipping non-lending allocation: ${allocation.category}`);
+          console.log(
+            `Skipping non-lending allocation: ${allocation.category}`
+          );
           continue;
         }
 
-        const allocationAmount = 0.25 //Math.round((allocation.percentage / 100) * parseFloat(usdtBalance)); <-- UNCOMMENT AFTER TESTING
+        const allocationAmount = 0.25; //Math.round((allocation.percentage / 100) * parseFloat(usdtBalance)); <-- UNCOMMENT AFTER TESTING
         if (allocationAmount <= 0) {
-          console.log(`Skipping allocation with zero amount: ${allocation.category}`);
+          console.log(
+            `Skipping allocation with zero amount: ${allocation.category}`
+          );
           continue;
         }
 
         // Convert amount to wei
         const decimals = await usdtContract.decimals();
-        const amountInWei = ethers.parseUnits(allocationAmount.toString(), decimals);
+        const amountInWei = ethers.parseUnits(
+          allocationAmount.toString(),
+          decimals
+        );
 
         // Verify balance (redundant but ensures accuracy)
         const smartWalletBalance = await usdtContract.balanceOf(userAddress);
         if (smartWalletBalance < amountInWei) {
           setError(
-            `Insufficient usdt in Smart Wallet (${userAddress}). Available: ${ethers.formatUnits(smartWalletBalance, decimals)} usdt, Required: ${allocationAmount} usdt.`
+            `Insufficient usdt in Smart Wallet (${userAddress}). Available: ${ethers.formatUnits(
+              smartWalletBalance,
+              decimals
+            )} usdt, Required: ${allocationAmount} usdt.`
           );
           return;
         }
@@ -128,7 +142,9 @@ export default function Allocation() {
 
         if (!response.ok || !result.success) {
           console.error("API call failed:", result);
-          setError(`Failed to fetch transaction data for ${allocation.category}: ${result.error}`);
+          setError(
+            `Failed to fetch transaction data for ${allocation.category}: ${result.error}`
+          );
           return;
         }
 
@@ -138,20 +154,29 @@ export default function Allocation() {
 
         // Send batched transactions using Privy Smart Wallet
         const txHash = await client.sendTransaction({
-          calls: transactions.map((tx: { to: string; data: string; value: string }) => ({
-            to: tx.to,
-            data: tx.data,
-            value: BigInt(tx.value),
-          })),
+          calls: transactions.map(
+            (tx: { to: string; data: string; value: string }) => ({
+              to: tx.to,
+              data: tx.data,
+              value: BigInt(tx.value),
+            })
+          ),
         });
 
-        console.log(`Transaction successful for ${allocation.category}! Tx Hash:`, txHash);
+        console.log(
+          `Transaction successful for ${allocation.category}! Tx Hash:`,
+          txHash
+        );
       }
 
       console.log("All positions created successfully!");
     } catch (error) {
       console.error("Error creating positions:", error);
-      setError(error instanceof Error ? error.message : "An error occurred while creating positions.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while creating positions."
+      );
     }
   };
 
@@ -180,7 +205,11 @@ export default function Allocation() {
       }
     } catch (error) {
       console.error("Error in handleContinue:", error);
-      setError(error instanceof Error ? error.message : "An error occurred while saving the portfolio.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while saving the portfolio."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -195,11 +224,17 @@ export default function Allocation() {
             Here’s the portfolio I designed for you...
           </Typography>
           <Typography variant="body1">
-            Start adding assets, LP pools, or lending markets you prefer for each allocation category.
+            Start adding assets, LP pools, or lending markets you prefer for
+            each allocation category.
           </Typography>
           {/* Display Smart Wallet usdt balance */}
           <Typography variant="subtitle1" color="primary" className="pt-4">
-            Total Portfolio Amount: <b>{usdtBalance ? `${parseFloat(usdtBalance).toFixed(2)} USDT` : "Loading..."}</b>
+            Total Portfolio Amount:{" "}
+            <b>
+              {usdtBalance
+                ? `${parseFloat(usdtBalance).toFixed(2)} USDT`
+                : "Loading..."}
+            </b>
           </Typography>
           {error && (
             <Typography variant="body2" color="error" className="pt-4">

@@ -1,5 +1,10 @@
 import { AllocationType } from "./constants";
 
+export type AdvisorAssessment = {
+  risk_profile: string;
+  reasoning: string;
+};
+
 export type AllocationFormat = {
   category: string;
   description: string;
@@ -19,13 +24,21 @@ export interface AllocationItem {
 
 export type PortfolioState = AllocationItem[];
 
-export type PortfolioAction = {
-  type: "UPDATE_ALLOCATION";
-  payload: {
-    category: string;
-    allocations: string[];
-  };
-};
+export type PortfolioAction =
+  | {
+      type: "UPDATE_ALLOCATION";
+      payload: {
+        category: AllocationType;
+        allocations: string[];
+      };
+    }
+  | {
+      type: "SET_PORTFOLIO_PERCENTAGES";
+      payload: Array<{
+        category: AllocationType;
+        percentage: number;
+      }>;
+    };
 
 export interface SmartAccountState {
   smartWalletAddress: string | null;

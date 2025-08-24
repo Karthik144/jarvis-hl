@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useReducer, ReactNode } from "react";
-
 import { PortfolioAction, PortfolioState } from "@/types";
 import { AllocationType } from "@/constants";
 
@@ -23,6 +22,17 @@ const portfolioReducer = (
           ? { ...item, allocations: action.payload.allocations }
           : item
       );
+
+    case "SET_PORTFOLIO_PERCENTAGES":
+      return state.map((item) => {
+        const newAllocation = action.payload.find(
+          (p) => p.category === item.category
+        );
+        return newAllocation
+          ? { ...item, percentage: newAllocation.percentage }
+          : item;
+      });
+
     default:
       return state;
   }

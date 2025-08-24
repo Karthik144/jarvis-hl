@@ -8,32 +8,30 @@ import { Typography } from "@mui/material";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AdvisorApiResponse } from "@/lib/advisor/types";
-
-interface Message {
-  type: "agent" | "user";
-  text: string;
-}
+import { usePortfolio } from "@/providers/PortfolioProvider";
+import { AllocationType } from "@/constants";
+import { PortfolioState } from "@/types";
+import { usePrivy } from "@privy-io/react-auth";
+import { updateAdvisorAssessment } from "@/utils/updateAdvisorAssessment";
+import { Message } from "./types";
 
 export default function RiskProfilePage() {
   const router = useRouter();
+  const { dispatch } = usePortfolio();
+  const { user } = usePrivy();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isComplete, setIsComplete] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const conversationEndRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to bottom when messages update
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  useEffect(() => {
-    if (isComplete) {
-      router.push("/allocation");
-    }
-  }, [isComplete, router]);
-
+  // Initialize conversation on component mount
   useEffect(() => {
     const startConversation = async () => {
       try {
@@ -42,14 +40,19 @@ export default function RiskProfilePage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({}),
         });
-        if (!response.ok) throw new Error("API Error");
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status}`);
+        }
 
         const data: AdvisorApiResponse = await response.json();
-        if (!data.isComplete) {
+
+        if (!data.isComplete && data.question) {
           setMessages([{ type: "agent", text: data.question }]);
           setSessionId(data.sessionId);
         }
       } catch (error) {
+        console.error("Failed to start conversation:", error);
         setMessages([
           {
             type: "agent",
@@ -60,61 +63,39 @@ export default function RiskProfilePage() {
         setIsLoading(false);
       }
     };
+
     startConversation();
   }, []);
 
   const handleSendMessage = async (messageText: string) => {
-    if (!messageText.trim() || isLoading) return;
+    const trimmedMessage = messageText.trim();
+    if (!trimmedMessage || isLoading) return;
 
-    setMessages((prev) => [...prev, { type: "user", text: messageText }]);
+    // Add user message immediately
+    setMessages((prev) => [...prev, { type: "user", text: trimmedMessage }]);
     setIsLoading(true);
 
     try {
       const response = await fetch("/api/advisor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userResponse: messageText, sessionId }),
+        body: JSON.stringify({
+          userResponse: trimmedMessage,
+          sessionId,
+        }),
       });
-      if (!response.ok) throw new Error("API Error");
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
 
       const data: AdvisorApiResponse = await response.json();
 
-      if (data.isComplete) {
-        const { allocation } = data;
-        const finalMessages: Message[] = [
-          {
-            type: "agent",
-            text: `Great! Based on our conversation, you have a **${allocation.risk_profile}** profile. Here is your recommended allocation:`,
-          },
-          {
-            type: "agent",
-            text: allocation.allocations
-              .map((a) => `- **${a.category.toUpperCase()}**: ${a.percentage}%`)
-              .join("\n"),
-          },
-          {
-            type: "agent",
-            text: `**Reasoning:** ${allocation.reasoning}`,
-          },
-        ];
-        setMessages((prev) => [...prev, ...finalMessages]);
-
-        const orderedAllocation = ["spot", "vault", "lending", "lp"].map(
-          (cat) =>
-            allocation.allocations.find((a) => a.category === cat) || {
-              category: cat,
-              percentage: 0,
-            }
-        );
-        console.log("ALLOCATION:", orderedAllocation);
-        setIsComplete(true);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { type: "agent", text: data.question },
-        ]);
+      if (data.isComplete && data.allocation) {
+        await handleCompletedAssessment(data.allocation);
       }
     } catch (error) {
+      console.error("Failed to send message:", error);
       setMessages((prev) => [
         ...prev,
         {
@@ -127,11 +108,61 @@ export default function RiskProfilePage() {
     }
   };
 
+  const handleCompletedAssessment = async (allocation: any) => {
+    try {
+      // Save advisor assessment if user is authenticated
+      if (user?.wallet?.address) {
+        const advisorAssessment = {
+          risk_profile: allocation.risk_profile,
+          reasoning: allocation.reasoning,
+        };
+
+        await updateAdvisorAssessment(user.wallet.address, advisorAssessment);
+      } else {
+        console.warn("User not authenticated - cannot save advisor assessment");
+      }
+
+      // Update portfolio state
+      const portfolioState: PortfolioState = [
+        AllocationType.SPOT,
+        AllocationType.VAULT,
+        AllocationType.LP,
+        AllocationType.LENDING,
+      ].map((category) => {
+        const advisorAllocation = allocation.allocations.find(
+          (a: any) => a.category === category
+        );
+        return {
+          category,
+          allocations: [],
+          percentage: advisorAllocation?.percentage || 0,
+        };
+      });
+
+      dispatch({
+        type: "SET_PORTFOLIO_PERCENTAGES",
+        payload: portfolioState,
+      });
+
+      // Navigate to allocation page
+      router.push("/allocation");
+    } catch (error) {
+      console.error("Failed to handle completed assessment:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "agent",
+          text: "Assessment complete, but there was an error saving your profile. Please try again.",
+        },
+      ]);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <Navbar />
       <main className="flex-grow p-8 overflow-y-auto">
-        <div className="w-full max-w-4xl">
+        <div className="w-full">
           <div className="flex flex-col gap-1 mb-8">
             <Typography variant="h6" fontWeight={550}>
               Let's first understand your goals and risk profile...

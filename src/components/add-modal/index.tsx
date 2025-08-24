@@ -8,18 +8,12 @@ import {
   TextField,
   ToggleButtonGroup,
   ToggleButton,
+  Switch,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import PrimaryButton from "../primary-button";
-import { AllocationFormat, AllocationItem } from "@/types";
 import { usePortfolio } from "@/providers/PortfolioProvider";
-
-interface AddModalProps {
-  format: AllocationFormat;
-  allocation: AllocationItem;
-  open: boolean;
-  onClose: () => void;
-}
+import { AddModalProps } from "./types";
 
 export default function AddModal({
   format,
@@ -31,6 +25,7 @@ export default function AddModal({
 
   const [addresses, setAddresses] = useState<string[]>(["", "", "", "", ""]);
   const [rebalanceFrequency, setRebalanceFrequency] = useState("weekly");
+  const [rebalanceEnabled, setRebalanceEnabled] = useState(true);
 
   useEffect(() => {
     if (open) {
@@ -58,9 +53,21 @@ export default function AddModal({
     }
   };
 
+  const handleRebalanceToggle = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRebalanceEnabled(event.target.checked);
+  };
+
   const handleSubmit = () => {
     const finalAddresses = addresses.filter((addr) => addr.trim() !== "");
     console.log("Submitting addresses:", finalAddresses);
+    console.log("Rebalance enabled:", rebalanceEnabled);
+    console.log(
+      "Rebalance frequency:",
+      rebalanceEnabled ? rebalanceFrequency : null
+    );
+
     dispatch({
       type: "UPDATE_ALLOCATION",
       payload: {
@@ -138,35 +145,44 @@ export default function AddModal({
             </div>
 
             <div className="flex flex-col gap-3">
-              <Typography variant="h6">Rebalance</Typography>
-              <ToggleButtonGroup
-                value={rebalanceFrequency}
-                exclusive
-                onChange={handleRebalanceFrequencyChange}
-                aria-label="rebalance frequency"
-              >
-                <ToggleButton
-                  value="everyday"
-                  aria-label="everyday"
-                  sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
+              <div className="flex items-center gap-2">
+                <Typography variant="h6">Rebalance</Typography>
+                <Switch
+                  checked={rebalanceEnabled}
+                  onChange={handleRebalanceToggle}
+                />
+              </div>
+
+              {rebalanceEnabled && (
+                <ToggleButtonGroup
+                  value={rebalanceFrequency}
+                  exclusive
+                  onChange={handleRebalanceFrequencyChange}
+                  aria-label="rebalance frequency"
                 >
-                  Everyday
-                </ToggleButton>
-                <ToggleButton
-                  value="weekly"
-                  aria-label="weekly"
-                  sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
-                >
-                  Weekly
-                </ToggleButton>
-                <ToggleButton
-                  value="monthly"
-                  aria-label="monthly"
-                  sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
-                >
-                  Monthly
-                </ToggleButton>
-              </ToggleButtonGroup>
+                  <ToggleButton
+                    value="everyday"
+                    aria-label="everyday"
+                    sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
+                  >
+                    Everyday
+                  </ToggleButton>
+                  <ToggleButton
+                    value="weekly"
+                    aria-label="weekly"
+                    sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
+                  >
+                    Weekly
+                  </ToggleButton>
+                  <ToggleButton
+                    value="monthly"
+                    aria-label="monthly"
+                    sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
+                  >
+                    Monthly
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              )}
             </div>
 
             <div className="flex justify-end">
