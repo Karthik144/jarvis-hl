@@ -16,14 +16,11 @@ export default function Navbar() {
 
   const isSignedIn = ready && authenticated;
 
-  // Note: Privy login method doesn't reutrn a promise so we need to handle the navigation manually
-  // To-Do: Use our own UI for login instead of Privy's
   useEffect(() => {
     const handleUserSession = async () => {
       if (isSignedIn && user?.wallet?.address) {
         console.log("User is authenticated, checking database...");
         await Promise.all([findOrCreateUser(user.wallet.address)]);
-        // router.push("/dashboard");
       }
     };
 
@@ -37,7 +34,6 @@ export default function Navbar() {
       router.push("/");
     } catch (error) {
       console.error("Logout failed with an error:", error);
-      // To-Do: Show a toast with the error message
     }
   };
 
@@ -54,24 +50,28 @@ export default function Navbar() {
         >
           Jarvis
         </Typography>
-        {/* Smart Wallet Address Display */}
-        <Box sx={{ mx: 2 }}>
-          <Typography variant="body2" color="text.secondary" noWrap>
-            {smartWalletAddress
-              ? `Smart Wallet: ${smartWalletAddress}`
-              : "No Smart Wallet"}
-          </Typography>
-        </Box>
-        <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={ButtonStyles}
-            onClick={isSignedIn ? handleLogout : login}
-          >
-            {isSignedIn ? "Sign Out" : "Sign In"}
-          </Button>
-        </Box>
+
+        {ready && (
+          <>
+            <Box sx={{ mx: 2 }}>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {smartWalletAddress
+                  ? `Smart Wallet: ${smartWalletAddress}`
+                  : "No Smart Wallet"}
+              </Typography>
+            </Box>
+            <Box>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={ButtonStyles}
+                onClick={isSignedIn ? handleLogout : login}
+              >
+                {isSignedIn ? "Sign Out" : "Sign In"}
+              </Button>
+            </Box>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   );

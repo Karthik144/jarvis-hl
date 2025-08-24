@@ -91,8 +91,13 @@ export default function RiskProfilePage() {
 
       const data: AdvisorApiResponse = await response.json();
 
-      if (data.isComplete && data.allocation) {
+      if (data.isComplete) {
         await handleCompletedAssessment(data.allocation);
+      } else if (data.question) {
+        setMessages((prev) => [
+          ...prev,
+          { type: "agent", text: data.question },
+        ]);
       }
     } catch (error) {
       console.error("Failed to send message:", error);

@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Modal,
-  Card,
-  Typography,
-  Chip,
-  TextField,
-  ToggleButtonGroup,
-  ToggleButton,
-  Switch,
-} from "@mui/material";
+import { Modal, Card, Typography, Chip, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import PrimaryButton from "../primary-button";
 import { usePortfolio } from "@/providers/PortfolioProvider";
@@ -24,8 +15,6 @@ export default function AddModal({
   const { dispatch } = usePortfolio();
 
   const [addresses, setAddresses] = useState<string[]>(["", "", "", "", ""]);
-  const [rebalanceFrequency, setRebalanceFrequency] = useState("weekly");
-  const [rebalanceEnabled, setRebalanceEnabled] = useState(true);
 
   useEffect(() => {
     if (open) {
@@ -44,29 +33,9 @@ export default function AddModal({
     setAddresses(newAddresses);
   };
 
-  const handleRebalanceFrequencyChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newFrequency: string | null
-  ) => {
-    if (newFrequency !== null) {
-      setRebalanceFrequency(newFrequency);
-    }
-  };
-
-  const handleRebalanceToggle = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRebalanceEnabled(event.target.checked);
-  };
-
   const handleSubmit = () => {
     const finalAddresses = addresses.filter((addr) => addr.trim() !== "");
     console.log("Submitting addresses:", finalAddresses);
-    console.log("Rebalance enabled:", rebalanceEnabled);
-    console.log(
-      "Rebalance frequency:",
-      rebalanceEnabled ? rebalanceFrequency : null
-    );
 
     dispatch({
       type: "UPDATE_ALLOCATION",
@@ -121,7 +90,7 @@ export default function AddModal({
               </Typography>
               <div className="flex items-center gap-2 mt-2">
                 <Chip
-                  label={`${25}% Allocation`}
+                  label={`${allocation.percentage}% Allocation`}
                   sx={{
                     backgroundColor: "#e3f2fd",
                     color: "#1565c0",
@@ -139,51 +108,7 @@ export default function AddModal({
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <Typography variant="h6">Assets</Typography>
-              <div className="flex flex-col gap-2">{assetInputFields}</div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Typography variant="h6">Rebalance</Typography>
-                <Switch
-                  checked={rebalanceEnabled}
-                  onChange={handleRebalanceToggle}
-                />
-              </div>
-
-              {rebalanceEnabled && (
-                <ToggleButtonGroup
-                  value={rebalanceFrequency}
-                  exclusive
-                  onChange={handleRebalanceFrequencyChange}
-                  aria-label="rebalance frequency"
-                >
-                  <ToggleButton
-                    value="everyday"
-                    aria-label="everyday"
-                    sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
-                  >
-                    Everyday
-                  </ToggleButton>
-                  <ToggleButton
-                    value="weekly"
-                    aria-label="weekly"
-                    sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
-                  >
-                    Weekly
-                  </ToggleButton>
-                  <ToggleButton
-                    value="monthly"
-                    aria-label="monthly"
-                    sx={{ borderRadius: "12px", textTransform: "none", px: 3 }}
-                  >
-                    Monthly
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              )}
-            </div>
+            {assetInputFields}
 
             <div className="flex justify-end">
               <PrimaryButton onClick={handleSubmit}>Submit</PrimaryButton>

@@ -27,7 +27,6 @@ export default function Allocation() {
   const [error, setError] = useState<string | null>(null);
   const [usdtBalance, setUsdtBalance] = useState<string | null>(null);
 
-  // Constants
   const USDT_ADDRESS = "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb"; // USDT on HyperEVM
   const HYPEREVM_RPC_URL = process.env.NEXT_PUBLIC_HYPEREVM_RPC_URL;
   const ERC20_ABI = [
@@ -35,7 +34,6 @@ export default function Allocation() {
     "function decimals() view returns (uint8)",
   ];
 
-  // Fetch USDT balance when user.smartWallet.address changes
   useEffect(() => {
     const fetchBalance = async () => {
       if (!user?.smartWallet?.address) {
@@ -195,7 +193,7 @@ export default function Allocation() {
     try {
       const userAddress = user.smartWallet.address;
       // const result = await updateUserPortfolio(userAddress, portfolio);
-      let result = true; // --- IGNORE ---
+      let result = true;
       if (result) {
         console.log("Portfolio saved successfully!", result);
         await createPositions();
@@ -227,7 +225,6 @@ export default function Allocation() {
             Start adding assets, LP pools, or lending markets you prefer for
             each allocation category.
           </Typography>
-          {/* Display Smart Wallet usdt balance */}
           <Typography variant="subtitle1" color="primary" className="pt-4">
             Total Portfolio Amount:{" "}
             <b>
