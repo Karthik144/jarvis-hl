@@ -10,7 +10,7 @@ import { supabase } from "./supabaseClient";
  */
 export const findOrCreateUser = async (
   publicAddress: string | undefined,
-  embeddedAccount: any
+  embeddedAccount?: any
 ) => {
   if (!publicAddress) {
     console.error(

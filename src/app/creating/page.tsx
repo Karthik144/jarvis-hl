@@ -29,7 +29,7 @@ export default function Creating() {
     if (user?.smartWallet?.address && client && usdtBalance !== null) {
       const executePortfolioCreation = async () => {
         try {
-          const userAddress = user.wallet?.address;
+          const userAddress = user.smartWallet?.address;
           if (!userAddress) throw new Error("EOA wallet address not found.");
 
           const saved = await updateUserPortfolio(userAddress, portfolio);

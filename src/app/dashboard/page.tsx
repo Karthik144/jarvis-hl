@@ -22,14 +22,17 @@ import { usePrivy, WalletWithMetadata } from "@privy-io/react-auth";
 import { getUserPortfolio } from "@/utils/getUserPortfolio";
 import { getTokenBalance } from "@/utils/getTokenBalance";
 import { AllocationItem } from "@/types";
+import { useSessionSigners } from "@privy-io/react-auth";
+
+// Icon Imports
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import SavingsIcon from "@mui/icons-material/Savings";
 import DonutLargeIcon from "@mui/icons-material/DonutLarge";
 import LockIcon from "@mui/icons-material/Lock";
 import { AllocationType } from "@/constants";
-import { useSessionSigners } from "@privy-io/react-auth";
 
+// Styled components and helper functions
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   padding: "16px",
   borderBottom: `1px solid ${theme.palette.grey[200]}`,
@@ -71,31 +74,50 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const { removeSessionSigners } = useSessionSigners();
 
+  const embeddedWallet = user?.linkedAccounts.find(
+    (account) =>
+      account.type === "wallet" && account.walletClientType === "privy"
+  ) as WalletWithMetadata;
+
   useEffect(() => {
     const fetchPortfolioAndBalances = async () => {
-      if (user?.wallet?.address && user.smartWallet?.address) {
+      if (
+        user?.wallet?.address &&
+        user.smartWallet?.address &&
+        embeddedWallet?.address
+      ) {
         try {
-          const smartWalletAddress = user.smartWallet.address;
-
           setIsLoading(true);
+          const smartWalletAddress = user.smartWallet.address;
+          const embeddedWalletAddress = embeddedWallet.address;
+
           const userPortfolio = await getUserPortfolio(user.wallet.address);
           setPortfolio(userPortfolio || []);
 
           if (userPortfolio && userPortfolio.length > 0) {
-            const allAssetAddresses = userPortfolio.flatMap(
-              (item) => item.allocations
-            );
-            const uniqueAddresses = [...new Set(allAssetAddresses)];
+            const balancePromises = userPortfolio.flatMap((item) =>
+              item.allocations.map((assetAddress) => {
+                const walletToUse =
+                  item.category === AllocationType.SPOT
+                    ? embeddedWalletAddress
+                    : smartWalletAddress;
 
-            const balancePromises = uniqueAddresses.map((address) =>
-              getTokenBalance(address, smartWalletAddress)
+                return getTokenBalance(assetAddress, walletToUse).then(
+                  (balance) => ({
+                    address: assetAddress,
+                    balance: balance,
+                  })
+                );
+              })
             );
 
             const results = await Promise.all(balancePromises);
 
             const balances: Record<string, AssetBalance | null> = {};
-            uniqueAddresses.forEach((address, index) => {
-              balances[address] = results[index];
+            results.forEach((result) => {
+              if (result) {
+                balances[result.address] = result.balance;
+              }
             });
 
             setAssetBalances(balances);
@@ -112,13 +134,15 @@ export default function Dashboard() {
       }
     };
     fetchPortfolioAndBalances();
-  }, [user?.wallet?.address, user?.smartWallet?.address]);
+  }, [user]);
 
   const removeSessionSigner = useCallback(
     async (walletAddress: string) => {
       setIsLoading(true);
       try {
-        await removeSessionSigners({ address: walletAddress });
+        if (walletAddress) {
+          await removeSessionSigners({ address: walletAddress });
+        }
       } catch (error) {
         console.error("Error removing session signer:", error);
       } finally {
@@ -241,22 +265,22 @@ export default function Dashboard() {
     );
   };
 
-  const embeddedWallet = user?.linkedAccounts.find(
-    (account) =>
-      account.type === "wallet" && account.walletClientType === "privy"
-  ) as WalletWithMetadata;
-
   const hasSessionSigners = embeddedWallet?.delegated === true;
 
   return (
     <div>
       <Navbar />
       <main className="p-8">
-        <div className="flex flex-col gap-3">
-          <div className="flex justify-between">
-            <Typography variant="h5" fontWeight={600} gutterBottom>
-              Dashboard
-            </Typography>
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <Typography variant="h5" fontWeight={600}>
+                Dashboard
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                A summary of your current onchain portfolio.
+              </Typography>
+            </div>
             <Button
               variant="outlined"
               color="error"
@@ -272,10 +296,6 @@ export default function Dashboard() {
               {isLoading ? "Processing..." : "Remove Session Signer"}
             </Button>
           </div>
-
-          <Typography variant="body1" color="text.secondary" className="mb-8">
-            Here is a summary of your current onchain portfolio allocations.
-          </Typography>
           <div className="mt-8">{renderContent()}</div>
         </div>
       </main>

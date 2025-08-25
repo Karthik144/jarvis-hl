@@ -1,16 +1,44 @@
+// src/app/page.tsx
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { GlowOrb } from "../components/orb";
 import { BoxStyles, ButtonStyles } from "./constants";
 import Navbar from "../components/navbar";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
+import { findOrCreateUser } from "@/utils/findOrCreateUser";
 
 export default function Home() {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { ready, authenticated, user, login } = usePrivy();
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  useEffect(() => {
+    const handleUserSession = async () => {
+      if (ready && authenticated && user?.wallet?.address) {
+        console.log("User is authenticated, checking database...");
+
+        const embeddedAccount = user.linkedAccounts.find(
+          (account) =>
+            account.type === "wallet" && account.walletClientType === "privy"
+        );
+
+        if (embeddedAccount) {
+          await findOrCreateUser(user.wallet.address, embeddedAccount);
+          router.push("/riskprofile");
+        } else {
+          console.error("Embedded wallet not found after login.");
+        }
+      }
+    };
+
+    handleUserSession();
+  }, [ready, authenticated, user, router]);
+
+  const handleLogin = () => {
+    login();
   };
 
   return (
@@ -47,7 +75,7 @@ export default function Home() {
           variant="contained"
           size="large"
           sx={ButtonStyles}
-          onClick={handleClickOpen}
+          onClick={handleLogin}
         >
           Get Started
         </Button>

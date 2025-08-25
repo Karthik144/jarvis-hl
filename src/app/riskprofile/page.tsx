@@ -151,7 +151,6 @@ export default function RiskProfilePage() {
         payload: portfolioState,
       });
 
-      // Navigate to allocation page
       router.push("/allocation");
     } catch (error) {
       console.error("Failed to handle completed assessment:", error);
