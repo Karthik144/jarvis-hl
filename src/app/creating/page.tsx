@@ -26,10 +26,16 @@ export default function Creating() {
   ];
 
   useEffect(() => {
-    if (user?.smartWallet?.address && client && usdtBalance !== null) {
+    if (
+      user?.wallet?.address &&
+      user?.smartWallet?.address &&
+      client &&
+      usdtBalance !== null
+    ) {
       const executePortfolioCreation = async () => {
         try {
-          const userAddress = user.smartWallet?.address;
+          // Note: DB is storing the original wallet address
+          const userAddress = user.wallet?.address;
           if (!userAddress) throw new Error("EOA wallet address not found.");
 
           const saved = await updateUserPortfolio(userAddress, portfolio);
@@ -52,7 +58,7 @@ export default function Creating() {
       executePortfolioCreation();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.smartWallet?.address, client, usdtBalance]);
+  }, [user?.smartWallet?.address, user?.wallet?.address, client, usdtBalance]);
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -103,7 +109,11 @@ export default function Creating() {
 
     try {
       // Collect all transactions to batch send later
-  const batchedTransactions: Array<{ to: string; data: string; value: bigint }> = [];
+      const batchedTransactions: Array<{
+        to: string;
+        data: string;
+        value: bigint;
+      }> = [];
 
       for (const categoryAllocation of portfolio) {
         console.log("Processing category:", categoryAllocation.category);
@@ -184,11 +194,13 @@ export default function Creating() {
           // Collect transactions from API response
           if (Array.isArray(result.transactions)) {
             batchedTransactions.push(
-              ...result.transactions.map((tx: { to: string; data: string; value?: string }) => ({
-                to: tx.to,
-                data: tx.data,
-                value: BigInt(tx.value || "0"),
-              }))
+              ...result.transactions.map(
+                (tx: { to: string; data: string; value?: string }) => ({
+                  to: tx.to,
+                  data: tx.data,
+                  value: BigInt(tx.value || "0"),
+                })
+              )
             );
           }
         }
@@ -196,7 +208,9 @@ export default function Creating() {
 
       // Send all transactions in a single batch
       if (batchedTransactions.length > 0) {
-        console.log(`Batching and sending ${batchedTransactions.length} transactions...`);
+        console.log(
+          `Batching and sending ${batchedTransactions.length} transactions...`
+        );
         // If type error persists, cast to expected type
         const txHash = await client.sendTransaction({
           calls: batchedTransactions as any,
