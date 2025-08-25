@@ -284,11 +284,16 @@ export default function Creating() {
               `Insufficient USDT for next transaction. Please top up your smart wallet.`
             );
           }
+          const embeddedWallet = user?.linkedAccounts.find(
+            (account) =>
+              account.type === "wallet" && account.walletClientType === "privy"
+          ) as WalletWithMetadata;
 
           const apiPayload = {
             inputToken: USDT_ADDRESS,
             requestedOutputToken: outputTokenAddress,
             userPublicAddress: userAddress,
+            embeddedWalletAddress: embeddedWallet?.address,
             amount: amountPerAsset,
             allocationType: categoryAllocation.category,
           };
