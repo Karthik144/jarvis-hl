@@ -76,6 +76,9 @@ export default function Creating() {
         const balance = await usdtContract.balanceOf(user.smartWallet.address);
         const decimals = await usdtContract.decimals();
         const formattedBalance = ethers.formatUnits(balance, decimals);
+
+        console.log("USER SMART WALLET:", user.smartWallet.address);
+        console.log("USDT BALANCE:", formattedBalance);
         setUsdtBalance(formattedBalance);
       } catch (error) {
         console.error("Error fetching USDT balance:", error);
@@ -86,37 +89,171 @@ export default function Creating() {
     fetchBalance();
   }, [user?.smartWallet?.address]);
 
+  //   const createPositions = async () => {
+  //     if (!user?.smartWallet?.address || !client) {
+  //       throw new Error("Smart wallet is not available.");
+  //     }
+  //     if (!usdtBalance || parseFloat(usdtBalance) <= 0) {
+  //       throw new Error("Insufficient USDT balance to create positions.");
+  //     }
+
+  //     // const testBalance = "5";
+
+  //     const RATE_LIMIT_DELAY_MS = 400; // 1000ms / 3 RPS = 333ms. 400ms as buffer.
+
+  //     const userAddress = user.smartWallet.address;
+  //     const embeddedWallet = user?.linkedAccounts.find(
+  //       (account) =>
+  //         account.type === "wallet" && account.walletClientType === "privy"
+  //     ) as WalletWithMetadata;
+
+  //     const provider = new ethers.JsonRpcProvider(HYPEREVM_RPC_URL);
+  //     const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
+
+  //     try {
+  //       // Collect all transactions to batch send later
+  //       const batchedTransactions: Array<{
+  //         to: string;
+  //         data: string;
+  //         value: bigint;
+  //       }> = [];
+
+  //       for (const categoryAllocation of portfolio) {
+  //         console.log("Processing category:", categoryAllocation.category);
+  //         if (
+  //           categoryAllocation.percentage <= 0 ||
+  //           categoryAllocation.allocations.length === 0
+  //         ) {
+  //           console.log(
+  //             `Skipping category ${categoryAllocation.category} (0% or no assets).`
+  //           );
+  //           continue;
+  //         }
+
+  //         const categoryTotalAmount =
+  //           (categoryAllocation.percentage / 100) * parseFloat(usdtBalance);
+  //         const amountPerAsset =
+  //           categoryTotalAmount / categoryAllocation.allocations.length;
+
+  //         if (amountPerAsset <= 0) continue;
+
+  //         for (const outputTokenAddress of categoryAllocation.allocations) {
+  //           console.log("Creating position for asset:", outputTokenAddress);
+  //           const decimals = await usdtContract.decimals();
+  //           const amountInWei = ethers.parseUnits(
+  //             amountPerAsset.toString(),
+  //             decimals
+  //           );
+
+  //           const apiPayload = {
+  //             inputToken: USDT_ADDRESS,
+  //             requestedOutputToken: outputTokenAddress,
+  //             userPublicAddress: userAddress,
+  //             embeddedWalletAddress: embeddedWallet?.address,
+  //             amount: amountPerAsset,
+  //             allocationType: categoryAllocation.category,
+  //           };
+
+  //           await new Promise((resolve) =>
+  //             setTimeout(resolve, RATE_LIMIT_DELAY_MS)
+  //           );
+
+  //           console.log("Sending API payload:", apiPayload);
+  //           const response = await fetch("/api/zap", {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/json" },
+  //             body: JSON.stringify(apiPayload),
+  //           });
+
+  //           const result = await response.json();
+  //           if (!response.ok || !result.success) {
+  //             throw new Error(
+  //               `API call failed for ${outputTokenAddress}: ${
+  //                 result.error || "Unknown error"
+  //               }`
+  //             );
+  //           }
+
+  //           console.log("RESULT", result);
+
+  //           //   const transactions = result.transactions;
+  //           //   console.log(`Batching transactions for ${outputTokenAddress}...`);
+
+  //           //   const txHash = await client.sendTransaction({
+  //           //     calls: transactions.map(
+  //           //       (tx: { to: string; data: string; value: string }) => ({
+  //           //         to: tx.to,
+  //           //         data: tx.data,
+  //           //         value: BigInt(tx.value || "0"),
+  //           //       })
+  //           //     ),
+  //           //   });
+
+  //           //   console.log(
+  //           //     `Transaction successful for ${outputTokenAddress}! Tx Hash:`,
+  //           //     txHash
+  //           //   );
+
+  //           // Collect transactions from API response
+  //           if (Array.isArray(result.transactions)) {
+  //             console.log("INSIDE RESULTS TRANSACTIONS");
+  //             batchedTransactions.push(
+  //               ...result.transactions.map(
+  //                 (tx: { to: string; data: string; value?: string }) => ({
+  //                   to: tx.to,
+  //                   data: tx.data,
+  //                   value: BigInt(tx.value || "0"),
+  //                 })
+  //               )
+  //             );
+
+  //             console.log("RESULT TRANSACTIONS:", result.transactions);
+  //           }
+  //         }
+  //       }
+
+  //       // Send all transactions in a single batch
+  //       if (batchedTransactions.length > 0) {
+  //         console.log(
+  //           `Batching and sending ${batchedTransactions.length} transactions...`
+  //         );
+  //         // If type error persists, cast to expected type
+  //         const txHash = await client.sendTransaction({
+  //           calls: batchedTransactions as any,
+  //         });
+  //         console.log(`Batch transaction successful! Tx Hash:`, txHash);
+  //       } else {
+  //         console.log("No transactions to send.");
+  //       }
+
+  //       console.log("All positions created successfully!");
+  //       setTimeout(() => router.push("/dashboard"), 2000);
+  //     } catch (error) {
+  //       console.error("Error creating positions:", error);
+  //       setError(
+  //         error instanceof Error
+  //           ? error.message
+  //           : "An error occurred during position creation."
+  //       );
+  //     }
+  //   };
+
   const createPositions = async () => {
     if (!user?.smartWallet?.address || !client) {
       throw new Error("Smart wallet is not available.");
     }
-    // if (!usdtBalance || parseFloat(usdtBalance) <= 0) {
-    //   throw new Error("Insufficient USDT balance to create positions.");
-    // }
+    if (!usdtBalance || parseFloat(usdtBalance) <= 0) {
+      throw new Error("Insufficient USDT balance to create positions.");
+    }
 
-    const testBalance = "5";
-
-    const RATE_LIMIT_DELAY_MS = 400; // 1000ms / 3 RPS = 333ms. 400ms as buffer.
+    const RATE_LIMIT_DELAY_MS = 400;
 
     const userAddress = user.smartWallet.address;
-    const embeddedWallet = user?.linkedAccounts.find(
-      (account) =>
-        account.type === "wallet" && account.walletClientType === "privy"
-    ) as WalletWithMetadata;
-
     const provider = new ethers.JsonRpcProvider(HYPEREVM_RPC_URL);
     const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
 
     try {
-      // Collect all transactions to batch send later
-      const batchedTransactions: Array<{
-        to: string;
-        data: string;
-        value: bigint;
-      }> = [];
-
       for (const categoryAllocation of portfolio) {
-        console.log("Processing category:", categoryAllocation.category);
         if (
           categoryAllocation.percentage <= 0 ||
           categoryAllocation.allocations.length === 0
@@ -128,25 +265,30 @@ export default function Creating() {
         }
 
         const categoryTotalAmount =
-          (categoryAllocation.percentage / 100) * parseFloat(testBalance);
+          (categoryAllocation.percentage / 100) * parseFloat(usdtBalance);
         const amountPerAsset =
           categoryTotalAmount / categoryAllocation.allocations.length;
 
         if (amountPerAsset <= 0) continue;
 
         for (const outputTokenAddress of categoryAllocation.allocations) {
-          console.log("Creating position for asset:", outputTokenAddress);
           const decimals = await usdtContract.decimals();
           const amountInWei = ethers.parseUnits(
             amountPerAsset.toString(),
             decimals
           );
 
+          const smartWalletBalance = await usdtContract.balanceOf(userAddress);
+          if (smartWalletBalance < amountInWei) {
+            throw new Error(
+              `Insufficient USDT for next transaction. Please top up your smart wallet.`
+            );
+          }
+
           const apiPayload = {
             inputToken: USDT_ADDRESS,
             requestedOutputToken: outputTokenAddress,
             userPublicAddress: userAddress,
-            embeddedWalletAddress: embeddedWallet?.address,
             amount: amountPerAsset,
             allocationType: categoryAllocation.category,
           };
@@ -171,53 +313,25 @@ export default function Creating() {
             );
           }
 
-          console.log("RESULT", result);
+          const transactionsForThisAsset = result.transactions.map(
+            (tx: { to: string; data: string; value?: string }) => ({
+              to: tx.to,
+              data: tx.data,
+              value: BigInt(tx.value || "0"),
+            })
+          );
 
-          //   const transactions = result.transactions;
-          //   console.log(`Batching transactions for ${outputTokenAddress}...`);
-
-          //   const txHash = await client.sendTransaction({
-          //     calls: transactions.map(
-          //       (tx: { to: string; data: string; value: string }) => ({
-          //         to: tx.to,
-          //         data: tx.data,
-          //         value: BigInt(tx.value || "0"),
-          //       })
-          //     ),
-          //   });
-
-          //   console.log(
-          //     `Transaction successful for ${outputTokenAddress}! Tx Hash:`,
-          //     txHash
-          //   );
-
-          // Collect transactions from API response
-          if (Array.isArray(result.transactions)) {
-            batchedTransactions.push(
-              ...result.transactions.map(
-                (tx: { to: string; data: string; value?: string }) => ({
-                  to: tx.to,
-                  data: tx.data,
-                  value: BigInt(tx.value || "0"),
-                })
-              )
+          if (transactionsForThisAsset.length > 0) {
+            console.log(`Sending batch for ${outputTokenAddress}...`);
+            const txHash = await client.sendTransaction({
+              calls: transactionsForThisAsset,
+            });
+            console.log(
+              `Tx successful for ${outputTokenAddress}! Hash:`,
+              txHash
             );
           }
         }
-      }
-
-      // Send all transactions in a single batch
-      if (batchedTransactions.length > 0) {
-        console.log(
-          `Batching and sending ${batchedTransactions.length} transactions...`
-        );
-        // If type error persists, cast to expected type
-        const txHash = await client.sendTransaction({
-          calls: batchedTransactions as any,
-        });
-        console.log(`Batch transaction successful! Tx Hash:`, txHash);
-      } else {
-        console.log("No transactions to send.");
       }
 
       console.log("All positions created successfully!");
@@ -231,7 +345,6 @@ export default function Creating() {
       );
     }
   };
-
   return (
     <div className="flex flex-col h-screen">
       <Navbar />
