@@ -83,12 +83,11 @@ interface AllocationItem {
 }
 
 interface UserForRebalance {
-  id: string;
   userPublicAddress: string;
-  privy_wallet_id?: string; // Added for Privy wallet mapping
   portfolio: AllocationItem[];
   initial_asset_prices: { token_address: string; initial_price: number }[];
   total_deposit_amount?: { amount: number };
+  embedded_account?: {id: string};
 }
 
 // Function to generate Privy authorization signature
@@ -230,7 +229,7 @@ async function getAllUsers(): Promise<UserForRebalance[]> {
   console.log("Fetching all users from the database...");
   const { data, error } = await supabase
     .from("users")
-    .select("id, userPublicAddress, privy_wallet_id, portfolio, initial_asset_prices, total_deposit_amount")
+    .select("userPublicAddress, portfolio, initial_asset_prices, total_deposit_amount, embedded_account")
     .not("portfolio", "is", null);
 
   if (error) {
