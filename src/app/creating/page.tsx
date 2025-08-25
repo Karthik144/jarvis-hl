@@ -94,9 +94,9 @@ export default function Creating() {
 
     const userAddress = user.smartWallet.address;
     const embeddedWallet = user?.linkedAccounts.find(
-    (account) =>
-      account.type === "wallet" && account.walletClientType === "privy"
-  ) as WalletWithMetadata;
+      (account) =>
+        account.type === "wallet" && account.walletClientType === "privy"
+    ) as WalletWithMetadata;
 
     const provider = new ethers.JsonRpcProvider(HYPEREVM_RPC_URL);
     const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
@@ -188,7 +188,7 @@ export default function Creating() {
       }
 
       console.log("All positions created successfully!");
-      //   setTimeout(() => router.push("/dashboard"), 2000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch (error) {
       console.error("Error creating positions:", error);
       setError(
