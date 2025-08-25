@@ -91,6 +91,7 @@ export default function Dashboard() {
           const smartWalletAddress = user.smartWallet.address;
           const embeddedWalletAddress = embeddedWallet.address;
 
+          console.log("EMBEDDED WALLET:", embeddedWalletAddress);
           const userPortfolio = await getUserPortfolio(user.wallet.address);
           setPortfolio(userPortfolio || []);
 

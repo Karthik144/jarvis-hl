@@ -9,6 +9,7 @@ import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { updateUserPortfolio } from "@/utils/updateUserPortfolio";
 import { usePortfolio } from "@/providers/PortfolioProvider";
 import { useRouter } from "next/navigation";
+import { AllocationType } from "@/constants";
 
 export default function Creating() {
   const [error, setError] = useState<string | null>(null);
@@ -34,13 +35,45 @@ export default function Creating() {
     ) {
       const executePortfolioCreation = async () => {
         try {
-          // Note: DB is storing the original wallet address
           const userAddress = user.wallet?.address;
           if (!userAddress) throw new Error("EOA wallet address not found.");
 
-          const saved = await updateUserPortfolio(userAddress, portfolio);
+          // --- NEW LOGIC TO RESOLVE aTOKEN ADDRESSES ---
+          // Create a deep copy to avoid mutating the original state directly
+          const portfolioToUpdate = JSON.parse(JSON.stringify(portfolio));
+
+          // Find the lending category allocation
+          const lendingAllocation = portfolioToUpdate.find(
+            (item: any) => item.category === AllocationType.LENDING
+          );
+
+          // If lending assets exist, resolve their aToken addresses
+          if (lendingAllocation && lendingAllocation.allocations.length > 0) {
+            console.log("Resolving aToken addresses for lending assets...");
+
+            const aTokenPromises = lendingAllocation.allocations.map(
+              (underlyingAddress: string) => getATokenAddress(underlyingAddress)
+            );
+
+            // Wait for all API calls to complete
+            const aTokenAddresses = await Promise.all(aTokenPromises);
+
+            console.log("Resolved aToken addresses:", aTokenAddresses);
+
+            // Update the lending item with the new aToken addresses
+            lendingAllocation.allocations = aTokenAddresses;
+          }
+          // --- END OF NEW LOGIC ---
+
+          // Now, save the updated portfolio to the database
+          const saved = await updateUserPortfolio(
+            userAddress,
+            portfolioToUpdate
+          );
           if (!saved) {
-            throw new Error("Failed to save portfolio to the database.");
+            throw new Error(
+              "Failed to save the updated portfolio to the database."
+            );
           }
 
           console.log(
