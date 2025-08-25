@@ -38,7 +38,6 @@ export default function Creating() {
           const userAddress = user.wallet?.address;
           if (!userAddress) throw new Error("EOA wallet address not found.");
 
-          // --- NEW LOGIC TO RESOLVE aTOKEN ADDRESSES ---
           // Create a deep copy to avoid mutating the original state directly
           const portfolioToUpdate = JSON.parse(JSON.stringify(portfolio));
 
@@ -63,7 +62,6 @@ export default function Creating() {
             // Update the lending item with the new aToken addresses
             lendingAllocation.allocations = aTokenAddresses;
           }
-          // --- END OF NEW LOGIC ---
 
           // Now, save the updated portfolio to the database
           const saved = await updateUserPortfolio(
