@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/navbar";
 import { Typography } from "@mui/material";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, WalletWithMetadata } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
@@ -93,6 +93,11 @@ export default function Creating() {
     const RATE_LIMIT_DELAY_MS = 400; // 1000ms / 3 RPS = 333ms. 400ms as buffer.
 
     const userAddress = user.smartWallet.address;
+    const embeddedWallet = user?.linkedAccounts.find(
+    (account) =>
+      account.type === "wallet" && account.walletClientType === "privy"
+  ) as WalletWithMetadata;
+
     const provider = new ethers.JsonRpcProvider(HYPEREVM_RPC_URL);
     const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
 
@@ -135,6 +140,7 @@ export default function Creating() {
             inputToken: USDT_ADDRESS,
             requestedOutputToken: outputTokenAddress,
             userPublicAddress: userAddress,
+            embeddedWalletAddress: embeddedWallet?.address,
             amount: amountPerAsset,
             allocationType: categoryAllocation.category,
           };
