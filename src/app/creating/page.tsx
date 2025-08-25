@@ -102,6 +102,9 @@ export default function Creating() {
     const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
 
     try {
+      // Collect all transactions to batch send later
+  const batchedTransactions: Array<{ to: string; data: string; value: bigint }> = [];
+
       for (const categoryAllocation of portfolio) {
         console.log("Processing category:", categoryAllocation.category);
         if (
@@ -128,13 +131,6 @@ export default function Creating() {
             amountPerAsset.toString(),
             decimals
           );
-
-          //   const smartWalletBalance = await usdtContract.balanceOf(userAddress);
-          //   if (smartWalletBalance < amountInWei) {
-          //     throw new Error(
-          //       `Insufficient USDT for next transaction. Please top up your smart wallet.`
-          //     );
-          //   }
 
           const apiPayload = {
             inputToken: USDT_ADDRESS,
@@ -184,7 +180,30 @@ export default function Creating() {
           //     `Transaction successful for ${outputTokenAddress}! Tx Hash:`,
           //     txHash
           //   );
+
+          // Collect transactions from API response
+          if (Array.isArray(result.transactions)) {
+            batchedTransactions.push(
+              ...result.transactions.map((tx: { to: string; data: string; value?: string }) => ({
+                to: tx.to,
+                data: tx.data,
+                value: BigInt(tx.value || "0"),
+              }))
+            );
+          }
         }
+      }
+
+      // Send all transactions in a single batch
+      if (batchedTransactions.length > 0) {
+        console.log(`Batching and sending ${batchedTransactions.length} transactions...`);
+        // If type error persists, cast to expected type
+        const txHash = await client.sendTransaction({
+          calls: batchedTransactions as any,
+        });
+        console.log(`Batch transaction successful! Tx Hash:`, txHash);
+      } else {
+        console.log("No transactions to send.");
       }
 
       console.log("All positions created successfully!");
